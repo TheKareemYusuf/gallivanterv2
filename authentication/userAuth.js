@@ -105,7 +105,7 @@ passport.use(
       // Use profile information (e.g., email) to find or create a user in your database
       try {
         let user = await User.findOne({ email: profile.emails[0].value });
-        // console.log(profile);
+        console.log(profile);
         // console.log({
         //   email: profile.email,
         //   picture: profile.picture,
@@ -122,7 +122,8 @@ passport.use(
             lastName: profile.family_name,
             userImageUrl: profile.picture,
             signedUpWithGoogle: true,
-            googleId: profile.id
+            googleId: profile.id,
+            phoneNumber: null
             // You may want to extract other information from the profile
             // and save it to your user database.
           });

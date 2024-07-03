@@ -47,11 +47,12 @@ const UserSchema = new mongoose.Schema(
       type: String,
       validate: {
         validator: function (value) {
-          return validator.isMobilePhone(value, "any", { strictMode: false });
+          return value === null || validator.isMobilePhone(value, "any", { strictMode: false });
         },
         message: "Please enter a valid phone number!",
       },
       unique: true,
+      default: null,
     },
     googleId: String, // Store Google ID
     signedUpWithGoogle: {
