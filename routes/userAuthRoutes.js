@@ -92,14 +92,14 @@ authRouter.post("/login", async (req, res, next) => {
 
 // Google OAuth2 Authentication
 authRouter.get(
-  "/google",
+  "auth/google",
   passport.authenticate("google", {
     scope: ["profile", "email"],
   })
 );
 
 authRouter.get(
-  "/google/callback",
+  "auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
   (req, res) => {
     // Successful Google authentication, generate JWT token
