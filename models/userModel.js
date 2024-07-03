@@ -2,18 +2,20 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const validator = require("validator");
 const crypto = require('crypto');
+const AppError = require('./../utils/appError');
+
 
 
 const UserSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
-      // required: [true, "Please enter first name"],
+      required: [true, "Please enter first name"],
       trim: true,
     },
     lastName: {
       type: String,
-      // required: [true, "Please enter last name"],
+      required: [true, "Please enter last name"],
       trim: true,
     },
     email: {
@@ -25,9 +27,9 @@ const UserSchema = new mongoose.Schema(
       type: String,
       minlength: 8,
       select: false,
-      // required: function () {
-      //   return this.isNew || this.isModified("password");
-      // },
+      required: function () {
+        return this.isNew || this.isModified("password");
+      },
     },
     confirmPassword: {
       type: String,
@@ -139,7 +141,7 @@ UserSchema.pre("save", async function (next) {
   if (this.phoneNumber !== null) {
     const existingUser = await User.findOne({ phoneNumber: this.phoneNumber });
     if (existingUser && existingUser._id.toString() !== this._id.toString()) {
-      return next(new Error("Phone number must be unique"));
+      return next(new AppError("Phone number has been registered", 409));
     }
   }
   next();
