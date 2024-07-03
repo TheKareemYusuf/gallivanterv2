@@ -51,7 +51,6 @@ const UserSchema = new mongoose.Schema(
         },
         message: "Please enter a valid phone number!",
       },
-      unique: true,
       default: null,
     },
     googleId: String, // Store Google ID
@@ -135,6 +134,17 @@ UserSchema.pre("save", async function (next) {
   this.confirmPassword = undefined;
   next();
 });
+
+UserSchema.pre("save", async function (next) {
+  if (this.phoneNumber !== null) {
+    const existingUser = await User.findOne({ phoneNumber: this.phoneNumber });
+    if (existingUser && existingUser._id.toString() !== this._id.toString()) {
+      return next(new Error("Phone number must be unique"));
+    }
+  }
+  next();
+});
+
 
 UserSchema.methods.isValidPassword = async function (password) {
   const user = this;
