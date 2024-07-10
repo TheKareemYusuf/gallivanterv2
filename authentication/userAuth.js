@@ -61,6 +61,8 @@ passport.use(
         agreedToTerms,
       });
 
+      
+
       return next(null, user);
     } catch (error) {
       next(error);

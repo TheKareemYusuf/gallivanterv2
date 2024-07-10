@@ -2,6 +2,7 @@ const express = require("express");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const CONFIG = require("./../config/config");
+const authController = require("./../controllers/userAuthController.js")
 // const sendEmail = require('./../utils/email');
 
 
@@ -27,9 +28,9 @@ authRouter.post(
     // Remove password from output
     req.user.password = undefined;
 
-    // const user = req.user
-    // const url = CONFIG.EXPLORE_PAGE
-    // await new sendEmail(user, url).sendWelcome();
+    const user = req.user
+    const url = CONFIG.EXPLORE_PAGE
+    await new sendEmail(user, url).sendWelcome();
 
     res.status(200).json({
       status: "success",
@@ -124,5 +125,10 @@ authRouter.get(
     });
   }
 );
+
+// Password reset routes
+authRouter.post('/forgot-password', authController.forgotPassword);
+authRouter.patch('/reset-password/:token', authController.resetPassword);
+
 
 module.exports = authRouter;

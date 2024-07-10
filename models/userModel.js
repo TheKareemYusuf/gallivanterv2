@@ -60,6 +60,7 @@ const UserSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+   
     userImageUrl: {
       type: String,
       default:
