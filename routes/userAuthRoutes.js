@@ -3,7 +3,7 @@ const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const CONFIG = require("./../config/config");
 const authController = require("./../controllers/userAuthController.js")
-// const sendEmail = require('./../utils/email');
+const sendEmail = require('./../utils/email');
 
 
 const authRouter = express.Router();
@@ -28,9 +28,7 @@ authRouter.post(
     // Remove password from output
     req.user.password = undefined;
 
-    const user = req.user
-    const url = CONFIG.EXPLORE_PAGE
-    await new sendEmail(user, url).sendWelcome();
+ 
 
     res.status(200).json({
       status: "success",
@@ -93,14 +91,14 @@ authRouter.post("/login", async (req, res, next) => {
 
 // Google OAuth2 Authentication
 authRouter.get(
-  "auth/google",
+  "/auth/google",
   passport.authenticate("google", {
     scope: ["profile", "email"],
   })
 );
 
 authRouter.get(
-  "auth/google/callback",
+  "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
   (req, res) => {
     // Successful Google authentication, generate JWT token
@@ -129,6 +127,7 @@ authRouter.get(
 // Password reset routes
 authRouter.post('/forgot-password', authController.forgotPassword);
 authRouter.patch('/reset-password/:token', authController.resetPassword);
+authRouter.post('/verify-email/', authController.verifyEmail);
 
 
 module.exports = authRouter;

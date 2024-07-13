@@ -30,10 +30,11 @@ const { convert } = require('html-to-text');
 
 // from: "Kareem Yusuf  <hello@gmail.com>",
 class sendEmail {
-  constructor(user, url, tour = {}) {
+  constructor(user, url, tour = {}, verificationToken) {
     this.to = user.email;
     this.firstName = user.firstName;
     this.url = url;
+    this.verificationToken = verificationToken;
     this.tourTitle = tour.title;
     this.tourPrice = tour.price;
     this.currency = tour.currency;
@@ -60,6 +61,7 @@ class sendEmail {
     const html = pug.renderFile(templatePath, {
       firstName: this.firstName,
       url: this.url,
+      verificationToken: this.verificationToken,
       subject,
       tourTitle: this.tourTitle,
       tourPrice: this.tourPrice,
@@ -77,6 +79,10 @@ class sendEmail {
 
     // 3) Create a transport and send email
     await this.newTransport().sendMail(mailOptions);
+  }
+
+  async sendEmailVerification() {
+    await this.send('emailVerification', 'Your OTP for email verification');
   }
 
   async sendWelcome() {

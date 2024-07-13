@@ -2,6 +2,7 @@ const passport = require("passport");
 const passportCustom = require("passport-custom");
 const CONFIG = require("./../config/config");
 const AppError = require("./../utils/appError");
+const sendEmail = require("./../utils/email")
 
 const User = require("./../models/userModel");
 
@@ -61,7 +62,13 @@ passport.use(
         agreedToTerms,
       });
 
-      
+      // Generate OTP and send email
+      const otp = user.createEmailVerificationToken();
+      await user.save({ validateBeforeSave: false });
+
+      const verificationToken = otp;
+      await new sendEmail(user, verificationToken).sendEmailVerification();
+
 
       return next(null, user);
     } catch (error) {
@@ -107,7 +114,7 @@ passport.use(
       // Use profile information (e.g., email) to find or create a user in your database
       try {
         let user = await User.findOne({ email: profile.emails[0].value });
-        console.log(profile);
+        // console.log(profile);
         // console.log({
         //   email: profile.email,
         //   picture: profile.picture,

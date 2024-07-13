@@ -5,7 +5,36 @@ const sendEmail = require('./../utils/email');
 const jwt = require("jsonwebtoken");
 const CONFIG = require("./../config/config");
 
+const verifyEmail = async (req, res, next) => {
+  try {
+    const otp = req.body.otp;
+    const hashedToken = crypto.createHash('sha256').update(otp).digest('hex');
+    const user = await User.findOne({
+      emailVerificationToken: hashedToken,
+      emailVerificationExpires: { $gt: Date.now() },
+    });
 
+    if (!user) {
+      return next(new AppError('Token is invalid or has expired', 400));
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save();
+
+    
+    const url = CONFIG.EXPLORE_PAGE
+    await new sendEmail(user, url).sendWelcome();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Email verified successfully!',
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 const forgotPassword = async (req, res, next) => {
   try {
@@ -13,6 +42,11 @@ const forgotPassword = async (req, res, next) => {
     const user = await User.findOne({ email: req.body.email });
     if (!user) {
       return next(new AppError('User not found', 404));
+    }
+
+     // Check if the user signed up with Google
+     if (user.signedUpWithGoogle) {
+      return next(new AppError('Please sign-in with Google', 400));
     }
 
     // 2) Generate the random reset token
@@ -101,6 +135,7 @@ const resetPassword = async (req, res, next) => {
 };
 
 module.exports = {
+  verifyEmail,
     forgotPassword,
     resetPassword
 }

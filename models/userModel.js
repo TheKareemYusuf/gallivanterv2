@@ -118,7 +118,13 @@ const UserSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
       select: false
-    }
+    },
+    emailVerificationToken: String,
+    emailVerificationExpires: Date,
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
@@ -203,6 +209,12 @@ UserSchema.methods.createPasswordResetToken = function() {
   return resetToken;
 };
 
+UserSchema.methods.createEmailVerificationToken = function () {
+  const verificationToken = crypto.randomBytes(3).toString('hex'); // 6-digit OTP
+  this.emailVerificationToken = crypto.createHash('sha256').update(verificationToken).digest('hex');
+  this.emailVerificationExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+  return verificationToken;
+};
 const User = mongoose.model("User", UserSchema);
 
 module.exports = User;
