@@ -1,10 +1,10 @@
 const passport = require("passport");
 const passportCustom = require("passport-custom");
-const CONFIG = require("./../config/config");
-const AppError = require("./../utils/appError");
-const sendEmail = require("./../utils/email")
+const CONFIG = require("../config/config");
+const AppError = require("../utils/appError");
+const sendEmail = require("../utils/email")
 
-const User = require("./../models/userModel");
+const Operator = require("./../models/operatorModel");
 
 const JWTstrategy = require("passport-jwt").Strategy;
 const ExtractJWT = require("passport-jwt").ExtractJwt;
@@ -52,7 +52,7 @@ passport.use(
         );
       }
 
-      const user = await User.create({
+      const operator = await Operator.create({
         firstName,
         lastName,
         email,
@@ -63,14 +63,14 @@ passport.use(
       });
 
       // Generate OTP and send email
-      const otp = user.createEmailVerificationToken();
-      await user.save({ validateBeforeSave: false });
+      const otp = operator.createEmailVerificationToken();
+      await operator.save({ validateBeforeSave: false });
 
       const verificationToken = otp;
-      await new sendEmail(user, verificationToken).sendEmailVerification();
+      await new sendEmail(operator, verificationToken).sendEmailVerification();
 
 
-      return next(null, user);
+      return next(null, operator);
     } catch (error) {
       next(error);
     }
@@ -83,19 +83,21 @@ passport.use(
     try {
       const { email, password } = req.body;
       // const user = await User.findOne({ phoneNumber });
-      const user = await User.findOne({ email }).select("+password");
+      const operator = await Operator.findOne({ email }).select("+password");
 
-      if (!user) {
+      if (!operator) {
         return next(new AppError("Email or Password is incorrect", 404));
       }
 
-      const validate = await user.isValidPassword(password);
+      const validate = await operator.isValidPassword(password);
+      console.log("Operator found:", operator);
+      console.log("Password validation result:", validate);
 
       if (!validate) {
         return next(new AppError("Email or Password is incorrect", 404));
       }
 
-      return next(null, user, { message: "Logged in Successfully" });
+      return next(null, operator, { message: "Logged in Successfully" });
     } catch (error) {
       return next(error);
     }
@@ -107,25 +109,17 @@ passport.use(
     {
       clientID: CONFIG.GOOGLE_CLIENT_ID,
       clientSecret: CONFIG.GOOGLE_CLIENT_SECRET,
-      callbackURL: CONFIG.GOOGLE_CALLBACK_URL_USER,
+      callbackURL: CONFIG.GOOGLE_CALLBACK_URL_OPERATOR,
       passReqToCallback: true,
     },
     async function (request, accessToken, refreshToken, profile, next) {
       // Use profile information (e.g., email) to find or create a user in your database
       try {
-        let user = await User.findOne({ email: profile.emails[0].value });
-        // console.log(profile);
-        // console.log({
-        //   email: profile.email,
-        //   picture: profile.picture,
-        //   firstName: profile.given_name,
-        //   lastName: profile.family_name, firstName: profile.given_name,
-        //   lastName: profile.family_name,
-        // });
+        let user = await Operator.findOne({ email: profile.emails[0].value });
 
         if (!user) {
           // If the user doesn't exist, create a new user with the provided email
-          user = await User.create({
+          user = await Operator.create({
             email: profile.emails[0].value,
             firstName: profile.given_name,
             lastName: profile.family_name,
@@ -152,7 +146,7 @@ passport.serializeUser((user, next) => {
 });
 
 passport.deserializeUser((id, next) => {
-  Creator.findById(id, (err, user) => {
+  Operator.findById(id, (err, user) => {
     next(err, user);
   });
 });

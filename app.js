@@ -16,6 +16,8 @@ const globalErrorHandler = require("./controllers/errorController");
 
 
 const userAuthRouter = require("./routes/userAuthRoutes");
+const operatorAuthRouter = require("./routes/operatorAuthRoutes");
+
 
 
 
@@ -69,7 +71,7 @@ app.use(bodyParser.json());
 require("./authentication/userAuth");
 
 // User authentication middleware
-// require("./authentication/creatorAuth");
+require("./authentication/operatorAuth");
 
 // Landing page routes
 app.get("/", (req, res) => {
@@ -91,6 +93,7 @@ app.use("/api/v1/users/", userAuthRouter);
 
 
 // Creator ROUTES
+app.use("/api/v1/operators/", operatorAuthRouter);
 
 
 
