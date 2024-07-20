@@ -89,6 +89,7 @@ authRouter.post("/login", async (req, res, next) => {
   })(req, res, next);
 });
 
+
 // Google OAuth2 Authentication
 authRouter.get(
   "/google",

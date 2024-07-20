@@ -27,9 +27,9 @@ const UserSchema = new mongoose.Schema(
       type: String,
       minlength: 8,
       select: false,
-      required: function () {
-        return this.isNew || this.isModified("password");
-      },
+      // required: function () {
+      //   return this.isNew || this.isModified("password");
+      // },
     },
     confirmPassword: {
       type: String,

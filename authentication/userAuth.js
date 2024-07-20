@@ -107,21 +107,21 @@ passport.use(
     {
       clientID: CONFIG.GOOGLE_CLIENT_ID,
       clientSecret: CONFIG.GOOGLE_CLIENT_SECRET,
-      callbackURL: CONFIG.GOOGLE_CALLBACK_URL_USER,
+      callbackURL: CONFIG.GOOGLE_CALLBACK_USER,
       passReqToCallback: true,
     },
     async function (request, accessToken, refreshToken, profile, next) {
       // Use profile information (e.g., email) to find or create a user in your database
       try {
         let user = await User.findOne({ email: profile.emails[0].value });
-        // console.log(profile);
-        // console.log({
-        //   email: profile.email,
-        //   picture: profile.picture,
-        //   firstName: profile.given_name,
-        //   lastName: profile.family_name, firstName: profile.given_name,
-        //   lastName: profile.family_name,
-        // });
+        console.log(profile);
+        console.log({
+          email: profile.email,
+          picture: profile.picture,
+          firstName: profile.given_name,
+          lastName: profile.family_name, firstName: profile.given_name,
+          lastName: profile.family_name,
+        });
 
         if (!user) {
           // If the user doesn't exist, create a new user with the provided email
@@ -131,8 +131,7 @@ passport.use(
             lastName: profile.family_name,
             userImageUrl: profile.picture,
             signedUpWithGoogle: true,
-            googleId: profile.id,
-            phoneNumber: null
+            googleId: profile.id
             // You may want to extract other information from the profile
             // and save it to your user database.
           });
@@ -152,7 +151,7 @@ passport.serializeUser((user, next) => {
 });
 
 passport.deserializeUser((id, next) => {
-  Creator.findById(id, (err, user) => {
+  User.findById(id, (err, user) => {
     next(err, user);
   });
 });

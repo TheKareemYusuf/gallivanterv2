@@ -36,9 +36,9 @@ const OperatorSchema = new mongoose.Schema({
     type: String,
     minlength: 8,
     select: false,
-    required: function () {
-      return this.isNew || this.isModified("password");
-    },
+    // required: function () {
+    //   return this.isNew || this.isModified("password");
+    // },
   },
   confirmPassword: {
     type: String,
@@ -112,6 +112,16 @@ OperatorSchema.methods.isValidPassword = async function (password) {
 
   return compare;
 }
+
+OperatorSchema.pre("save", async function (next) {
+  if (this.phoneNumber !== null) {
+    const existingUser = await User.findOne({ phoneNumber: this.phoneNumber });
+    if (existingUser && existingUser._id.toString() !== this._id.toString()) {
+      return next(new AppError("Phone number has been registered", 409));
+    }
+  }
+  next();
+});
 
 OperatorSchema.pre("save", async function (next) {
   if (this.companyName !== null) {

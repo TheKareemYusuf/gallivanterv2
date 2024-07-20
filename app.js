@@ -70,7 +70,7 @@ app.use(bodyParser.json());
 // User authentication middleware
 require("./authentication/userAuth");
 
-// User authentication middleware
+// Operator authentication middleware
 require("./authentication/operatorAuth");
 
 // Landing page routes

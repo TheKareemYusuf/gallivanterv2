@@ -104,21 +104,21 @@ passport.use(
   })
 );
 
+
 passport.use(
+  "operator-google",
   new GoogleStrategy(
     {
       clientID: CONFIG.GOOGLE_CLIENT_ID,
       clientSecret: CONFIG.GOOGLE_CLIENT_SECRET,
-      callbackURL: CONFIG.GOOGLE_CALLBACK_URL_OPERATOR,
+      callbackURL: CONFIG.GOOGLE_CALLBACK_OPERATOR,
       passReqToCallback: true,
     },
     async function (request, accessToken, refreshToken, profile, next) {
-      // Use profile information (e.g., email) to find or create a user in your database
       try {
         let user = await Operator.findOne({ email: profile.emails[0].value });
 
         if (!user) {
-          // If the user doesn't exist, create a new user with the provided email
           user = await Operator.create({
             email: profile.emails[0].value,
             firstName: profile.given_name,
@@ -127,8 +127,6 @@ passport.use(
             signedUpWithGoogle: true,
             googleId: profile.id,
             phoneNumber: null
-            // You may want to extract other information from the profile
-            // and save it to your user database.
           });
         }
 
@@ -140,7 +138,6 @@ passport.use(
   )
 );
 
-// Passport serialization and deserialization
 passport.serializeUser((user, next) => {
   next(null, user.id);
 });
