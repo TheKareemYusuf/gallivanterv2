@@ -18,7 +18,10 @@ const UserSchema = Joi.object({
     otherwise: Joi.optional()
   }),
   status: Joi.string().valid("active", "non-active", "deactivated").optional(),
-  phoneNumber: Joi.string().regex(/^\d{11}$/).allow(null).optional(), // Allow null
+  // phoneNumber: Joi.string().regex(/^\d{11}$/).allow(null).optional(), // Allow null
+  phoneNumber: Joi.string().regex(/^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$/).allow(null).optional(), // Allow null
+
+  
   gender: Joi.string().valid("male", "female").optional(),
   agreedToTerms: Joi.boolean().required() // Added validation for agreedToTerms
 

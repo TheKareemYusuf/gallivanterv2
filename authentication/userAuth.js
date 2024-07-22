@@ -103,6 +103,7 @@ passport.use(
 );
 
 passport.use(
+  "user-google",
   new GoogleStrategy(
     {
       clientID: CONFIG.GOOGLE_CLIENT_ID,

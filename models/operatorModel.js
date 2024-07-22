@@ -57,11 +57,11 @@ const OperatorSchema = new mongoose.Schema({
   },
   operatorImageUrl: {
     type: String,
-    default: "http://res.cloudinary.com/dzodph4o8/image/upload/v1693051381/creator-images/qa3cdrcltw6rtgejgst2.webp"
+    default: "https://res.cloudinary.com/djvqftiri/image/upload/v1721555127/profile-image-placeholder.png"
   },
   operatorImagePublicId: {
     type: String,
-    default: "creator-images/qa3cdrcltw6rtgejgst2"
+    default: "profile-image-placeholder",
   },
   gender: {
     type: String,

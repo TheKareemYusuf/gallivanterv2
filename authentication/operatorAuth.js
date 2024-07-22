@@ -27,7 +27,7 @@ passport.use(
 );
 
 passport.use(
-  "user-signup",
+  "operator-signup",
   new passportCustom(async (req, next) => {
     try {
       const {
@@ -78,7 +78,7 @@ passport.use(
 );
 
 passport.use(
-  "user-login",
+  "operator-login",
   new passportCustom(async (req, next) => {
     try {
       const { email, password } = req.body;

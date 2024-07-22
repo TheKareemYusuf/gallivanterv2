@@ -12,7 +12,7 @@ const operatorValidationMW = require("../validators/operator.validation.js");
 authRouter.post(
   "/signup",
   operatorValidationMW,
-  passport.authenticate("user-signup", { session: false }),
+  passport.authenticate("operator-signup", { session: false }),
   async (req, res, next) => {
    try {
     const body = {
@@ -46,7 +46,7 @@ authRouter.post(
 );
 
 authRouter.post("/login", async (req, res, next) => {
-  passport.authenticate("user-login", async (err, user, info) => {
+  passport.authenticate("operator-login", async (err, user, info) => {
     try {
       if (err) {
         return next(err);

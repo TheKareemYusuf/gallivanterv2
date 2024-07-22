@@ -64,11 +64,11 @@ const UserSchema = new mongoose.Schema(
     userImageUrl: {
       type: String,
       default:
-        "http://res.cloudinary.com/dzodph4o8/image/upload/v1693051381/creator-images/qa3cdrcltw6rtgejgst2.webp",
+        "https://res.cloudinary.com/djvqftiri/image/upload/v1721555127/profile-image-placeholder.png"
     },
     userImagePublicId: {
       type: String,
-      default: "creator-images/qa3cdrcltw6rtgejgst2",
+      default: "profile-image-placeholder",
     },
     // agreed_to_terms: {
     //   type: Boolean,
