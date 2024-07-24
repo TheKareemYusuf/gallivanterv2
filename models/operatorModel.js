@@ -28,9 +28,13 @@ const OperatorSchema = new mongoose.Schema({
   },
   phoneNumber: {
     type: String,
-    // required: [true, "Phone number is required"],
-    match: /^\d{11}$/,
-    unique: true,
+    validate: {
+      validator: function (value) {
+        return value === null || validator.isMobilePhone(value, "any", { strictMode: false });
+      },
+      message: "Please enter a valid phone number!",
+    },
+    default: null,
   },
   password: {
     type: String,
@@ -115,7 +119,7 @@ OperatorSchema.methods.isValidPassword = async function (password) {
 
 OperatorSchema.pre("save", async function (next) {
   if (this.phoneNumber !== null) {
-    const existingUser = await User.findOne({ phoneNumber: this.phoneNumber });
+    const existingUser = await Operator.findOne({ phoneNumber: this.phoneNumber });
     if (existingUser && existingUser._id.toString() !== this._id.toString()) {
       return next(new AppError("Phone number has been registered", 409));
     }

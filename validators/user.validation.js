@@ -23,7 +23,7 @@ const UserSchema = Joi.object({
 
   
   gender: Joi.string().valid("male", "female").optional(),
-  agreedToTerms: Joi.boolean().required() // Added validation for agreedToTerms
+  agreedToTerms: Joi.boolean() // Added validation for agreedToTerms
 
  
 

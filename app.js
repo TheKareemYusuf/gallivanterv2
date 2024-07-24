@@ -18,6 +18,7 @@ const globalErrorHandler = require("./controllers/errorController");
 const userAuthRouter = require("./routes/userAuthRoutes");
 const operatorAuthRouter = require("./routes/operatorAuthRoutes");
 const userRouter = require('./routes/userRoutes');
+const operatorRouter = require("./routes/operatorRoutes");
 
 
 
@@ -98,6 +99,8 @@ app.use("/api/v1/users/profile", userRouter);
 
 // Operator ROUTES
 app.use("/api/v1/operators/", operatorAuthRouter);
+app.use("/api/v1/operators/profile", operatorRouter);
+
 
 
 

@@ -10,7 +10,7 @@ const {
 } = require("./../utils/cloudinary");
 const Operator = require("../models/operatorModel");
 
-const uploadUserPicture = uploadPicture.single("userProfileImage");
+const uploadOperatorPicture = uploadPicture.single("operatorProfileImage");
 
 
 
@@ -22,20 +22,20 @@ const filterObj = (obj, ...allowedFields) => {
   return newObj;
 };
 
-const getAllUsers = async (req, res, next) => {
+const getAllOperators = async (req, res, next) => {
   try {
     const features = new APIFeatures(User.find(), req.query)
       .filter()
       .sort()
       .limitFields()
       .paginate();
-    const users = await features.query;
+    const operators = await features.query;
 
     res.status(200).json({
       status: "success",
-      result: users.length,
+      result: operators.length,
       data: {
-        users,
+        operators,
       },
     });
   } catch (error) {
@@ -43,19 +43,19 @@ const getAllUsers = async (req, res, next) => {
   }
 };
 
-const getUser = async (req, res, next) => {
+const getOperator = async (req, res, next) => {
   try {
     const id = req.params.id;
-    const user = await User.findById(id);
+    const operator = await Operator.findById(id);
 
-    if (!user) {
+    if (!operator) {
       return next(new AppError("User not found", 404));
     }
 
     res.status(200).json({
       status: "success",
       data: {
-        user,
+        operator,
       },
     });
   } catch (error) {
@@ -63,19 +63,19 @@ const getUser = async (req, res, next) => {
   }
 };
 
-const getUserProfile = async (req, res, next) => {
+const getOperatorProfile = async (req, res, next) => {
   try {
     const id = req.user._id;
-    const user = await User.findById(id);
+    const operator = await Operator.findById(id);
 
-    if (!user) {
+    if (!operator) {
       return next(new AppError("User not found", 404));
     }
 
     res.status(200).json({
       status: "success",
       data: {
-        user,
+        operator,
       },
     });
   } catch (error) {
@@ -83,21 +83,21 @@ const getUserProfile = async (req, res, next) => {
   }
 };
 
-const createUser = (req, res, next) => {
+const createOperator = (req, res, next) => {
   res.status(200).json({
     status: "success",
     data: "creator created successfully",
   });
 };
 
-const uploadUserProfilePicture = async (req, res, next) => {
+const uploadOperatorProfilePicture = async (req, res, next) => {
     try {
       // Get the user id
       const id = req.user._id;
-      const user = await User.findById(id);
+      const operator = await Operator.findById(id);
   
       // check to see if user truly exists
-      if (!user) {
+      if (!operator) {
         return next(new AppError("User not found", 404));
       }
   
@@ -106,7 +106,7 @@ const uploadUserProfilePicture = async (req, res, next) => {
       }
   
       // Remove the previously uploaded image from Cloudinary
-      const public_id = user.userImagePublicId;
+      const public_id = operator.operatorImagePublicId;
       if (public_id && public_id !== "profile-image-placeholder") {
         await removeFromCloudinary(public_id);
       }
@@ -116,7 +116,7 @@ const uploadUserProfilePicture = async (req, res, next) => {
   
       // uploads the image to Cloudinary if there's any
       const imageBuffer = req.file.buffer;
-      const data = await uploadToCloudinary(imageBuffer, "user-images");
+      const data = await uploadToCloudinary(imageBuffer, "operator-images");
       imageData = data;
   
       // update the database with the recently uploaded image
@@ -146,17 +146,17 @@ const uploadUserProfilePicture = async (req, res, next) => {
     }
   };
 
-const updateUserProfile = async (req, res, next) => {
+const updateOperatorProfile = async (req, res, next) => {
   try {
     const id = req.user._id;
-    let userUpdate = { ...req.body };
+    let operatorUpdate = { ...req.body };
     // if (userUpdate.state) delete userUpdate.state;
 
 
-    const oldUser = await User.findById(id);
+    const oldOperator = await Operator.findById(id);
 
 
-    if (!oldUser) {
+    if (!oldOperator) {
       return next(
         new AppError("User not found", 404)
       );
@@ -172,22 +172,22 @@ const updateUserProfile = async (req, res, next) => {
     } 
 
     // 2) Filtered out unwanted fields names that are not allowed to be updated
-    const filteredBody = filterObj(userUpdate, "firstName", "lastName", "email", "phoneNumber" )
+    const filteredBody = filterObj(operatorUpdate, "firstName", "lastName", "email", "phoneNumber", "address" )
 
        // Check if email is being updated
-    if (filteredBody.email && filteredBody.email !== oldUser.email) {
+    if (filteredBody.email && filteredBody.email !== oldOperator.email) {
       // Generate email verification token
-      const verificationToken = oldUser.createEmailVerificationToken();
+      const verificationToken = oldOperator.createEmailVerificationToken();
       filteredBody.emailVerificationToken = verificationToken;
       filteredBody.emailVerificationExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
 
       // Send verification email
-      const verificationURL = `${req.protocol}://${req.get('host')}/api/v1/users/verify-email/${verificationToken}`;
-      await new sendEmail(oldUser, verificationURL).sendEmailVerification();
+      const verificationURL = `${req.protocol}://${req.get('host')}/api/v1/operators/verify-email/${verificationToken}`;
+      await new sendEmail(oldOperator, verificationURL).sendEmailVerification();
     }
 
     // 3) Update user document
-    const updatedUser = await User.findByIdAndUpdate(id, filteredBody, {
+    const updatedOperator = await Operator.findByIdAndUpdate(id, filteredBody, {
       new: true,
       runValidators: true,
       context: "query"
@@ -195,7 +195,7 @@ const updateUserProfile = async (req, res, next) => {
 
     res.status(200).json({
       status: "success",
-      data: updatedUser,
+      data: updatedOperator,
     
     });
   } catch (error) {
@@ -203,7 +203,7 @@ const updateUserProfile = async (req, res, next) => {
   }
 };
 
-const updateUserStatus = async (req, res, next) => {
+const updateOperatorStatus = async (req, res, next) => {
   try {
     let status = req.body.status;
     const id = req.params.id;
@@ -228,13 +228,13 @@ const updateUserStatus = async (req, res, next) => {
       return next(new AppError("Please provide a valid status"));
     }
 
-    const user = await User.findByIdAndUpdate(
+    const operator = await Operator.findByIdAndUpdate(
       id,
       { status: status.toLowerCase() },
       { new: true, runValidators: true, context: "query" }
     );
 
-    if (!user) {
+    if (!operator) {
       return res.status(404).json({
         status: "fail",
         message: "User not found",
@@ -243,23 +243,23 @@ const updateUserStatus = async (req, res, next) => {
 
     res.status(200).json({
       status: "success",
-      data: user,
+      data: operator,
     });
   } catch (error) {
     next(error);
   }
 };
 
-const deleteUser = async (req, res, next) => {
+const deleteOperator = async (req, res, next) => {
   try {
     const id = req.params.id;
-    const oldUser = await User.findById(id);
+    const oldOperator = await Operator.findById(id);
 
-    if (!oldUser) {
+    if (!oldOperator) {
       return next(new AppError("User not found", 404));
     }
 
-    await User.findByIdAndRemove(id);
+    await Operator.findByIdAndRemove(id);
 
     res.status(200).json({
       status: "user successfully deleted",
@@ -271,13 +271,13 @@ const deleteUser = async (req, res, next) => {
 };
 
 module.exports = {
-  getAllUsers,
-  getUser,
-  getUserProfile,
-  createUser,
-  updateUserStatus,
-  updateUserProfile,
-  deleteUser,
-  uploadUserPicture,
-  uploadUserProfilePicture,
+  getAllOperators,
+  getOperator,
+  getOperatorProfile,
+  createOperator,
+  updateOperatorStatus,
+  updateOperatorProfile,
+  deleteOperator,
+  uploadOperatorPicture,
+  uploadOperatorProfilePicture,
 };

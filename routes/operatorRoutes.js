@@ -1,9 +1,9 @@
 const express = require("express");
 const passport = require("passport");
-const userController = require("./../controllers/userController");
-const userAuthController = require("./../controllers/userAuthController");
+const operatorController = require("./../controllers/operatorController");
+const operatorAuthController = require("./../controllers/operatorAuthController");
 
-const UserValidationMW = require("./../validators/user.validation");
+const OperatorValidationMW = require("./../validators/operator.validation");
 const restrictToMW = require("./../authentication/restrictionHandler");
 
 const router = express.Router();
@@ -12,23 +12,23 @@ router
   .route("/get-profile")
   .get(
     passport.authenticate("jwt", { session: false }),
-    userController.getUserProfile
+    operatorController.getOperatorProfile
   );
 
 router
   .route("/update-profile")
   .put(
-    UserValidationMW,
+    OperatorValidationMW,
     passport.authenticate("jwt", { session: false }),
-    userController.updateUserProfile
+    operatorController.updateOperatorProfile
   );
 
   router
   .route("/update-profile-picture")
   .patch(
     passport.authenticate("jwt", { session: false }),
-    userController.uploadUserPicture,
-    userController.uploadUserProfilePicture
+    operatorController.uploadOperatorPicture, // Ensure this matches the field name in the form
+    operatorController.uploadOperatorProfilePicture
   );
 
 
@@ -40,12 +40,12 @@ router
   .get(
     passport.authenticate("jwt", { session: false }),
     restrictToMW.restrictTo("admin"),
-    userController.getUser
+    operatorController.getOperator
   )
   .patch(
-    UserValidationMW,
+    OperatorValidationMW,
     passport.authenticate("jwt", { session: false }),
-    userController.updateUserProfile
+    operatorController.updateOperatorProfile
   );
 
 router
@@ -53,24 +53,24 @@ router
   .get(
     passport.authenticate("jwt", { session: false }),
     restrictToMW.restrictTo("admin"),
-    userController.getUser
+    operatorController.getOperator
   )
   .put(
-    UserValidationMW,
+    OperatorValidationMW,
     passport.authenticate("jwt", { session: false }),
     restrictToMW.restrictTo("admin"),
-    userController.updateUserProfile
+    operatorController.updateOperatorProfile
   )
   .patch(
-    UserValidationMW,
+    OperatorValidationMW,
     passport.authenticate("jwt", { session: false }),
     restrictToMW.restrictTo("admin"),
-    userController.updateUserStatus
+    operatorController.updateOperatorStatus
   )
   .delete(
     passport.authenticate("jwt", { session: false }),
     restrictToMW.restrictTo("admin"),
-    userController.deleteUser
+    operatorController.deleteOperator
   );
 
 module.exports = router;
