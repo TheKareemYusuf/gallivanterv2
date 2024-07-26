@@ -86,7 +86,7 @@ passport.use(
       const operator = await Operator.findOne({ email }).select("+password");
 
       if (!operator) {
-        return next(new AppError("Email or Password is incorrect", 404));
+        return next(new AppError("Email or Password is incorrect", 401));
       }
 
       const validate = await operator.isValidPassword(password);
@@ -94,7 +94,7 @@ passport.use(
       // console.log("Password validation result:", validate);
 
       if (!validate) {
-        return next(new AppError("Email or Password is incorrect", 404));
+        return next(new AppError("Email or Password is incorrect", 401));
       }
 
       return next(null, operator, { message: "Logged in Successfully" });

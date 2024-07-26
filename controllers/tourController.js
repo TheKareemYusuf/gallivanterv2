@@ -412,6 +412,54 @@ const updateTourState = async (req, res, next) => {
     }
 }
 
+// Get all tours
+const getAllTours = async (req, res, next) => {
+    try {
+      const features = new APIFeatures(Tour.find(), req.query)
+        .filter()
+        .sort()
+        .limitFields()
+        .paginate();
+      const tours = await features.query;
+  
+      res.status(200).json({
+        status: "success",
+        result: tours.length,
+        data: {
+          tours,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  const getOneTour = async (req, res, next) => {
+    try {
+      const { tourIdOrSlug } = req.params;
+  
+      // Check if tourIdOrSlug is a valid ObjectId
+      const isObjectId = mongoose.Types.ObjectId.isValid(tourIdOrSlug);
+  
+      // Find the tour by either ID or slug
+      const tour = await Tour.findOne(isObjectId ? { _id: tourIdOrSlug } : { slug: tourIdOrSlug });
+  
+      if (!tour) {
+        return next(new AppError("Tour not found", 404));
+      }
+  
+      res.status(200).json({
+        status: "success",
+        data: tour
+      });
+    } catch (error) {
+      if (error instanceof mongoose.Error.CastError) {
+        return next(new AppError("Invalid tour ID or slug", 400));
+      }
+      next(error);
+    }
+  };
+
 module.exports = {
     createTour,
     updateTour,
@@ -420,5 +468,7 @@ module.exports = {
     getOperatourTours,
     getAOperatorTour,
     updateTourState,
-    getTourWithSlug
+    getTourWithSlug,
+    getAllTours,
+    getOneTour
 }

@@ -86,13 +86,13 @@ passport.use(
       const user = await User.findOne({ email }).select("+password");
 
       if (!user) {
-        return next(new AppError("Email or Password is incorrect", 404));
+        return next(new AppError("Email or Password is incorrect", 401));
       }
 
       const validate = await user.isValidPassword(password);
 
       if (!validate) {
-        return next(new AppError("Email or Password is incorrect", 404));
+        return next(new AppError("Email or Password is incorrect", 401));
       }
 
       return next(null, user, { message: "Logged in Successfully" });

@@ -1,12 +1,12 @@
-// const express = require("express");
-// const passport = require("passport");
-// const tourController = require("./../controllers/tourController");
+const express = require("express");
+const passport = require("passport");
+const tourController = require("./../controllers/tourController");
 
-// const router = express.Router();
+const router = express.Router();
 
-// router.route("/").get(tourController.getAllPublicTours)
+router.route("/").get(tourController.getAllTours)
 
-// router.route("/:tourId").get(tourController.getAPublicTour);
+router.route("/:tourIdOrSlug").get(tourController.getOneTour);
 
 // router
 //   .route("/joined-tours")
@@ -49,4 +49,4 @@
 //   passport.authenticate("jwt", { session: false }),
 //   tourController.addToWishList
 // );
-// module.exports = router;
+module.exports = router;
