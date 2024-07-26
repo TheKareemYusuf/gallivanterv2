@@ -1,6 +1,9 @@
 // const { string } = require("joi");
 
 const mongoose = require('mongoose');
+const slugify = require('slugify');
+const AppError = require("../utils/appError");
+
 
 const coverageSchema = new mongoose.Schema({
     meals: { type: Boolean },
@@ -58,14 +61,8 @@ const pricingSchema = new mongoose.Schema({
 });
 
 const gallerySchema = new mongoose.Schema({
-    imagesUrl: {
-        type: [String],
-        validate: [arrayLimit, '{PATH} exceeds the limit of 4']
-    },
-    imagesPublicId: {
-        type: [String],
-        validate: [arrayLimit, '{PATH} exceeds the limit of 4']
-    }
+    imageUrl: { type: String },
+    imagePublicId: { type: String }
 });
 
 function arrayLimit(val) {
@@ -74,7 +71,8 @@ function arrayLimit(val) {
 
 const TourSchema = new mongoose.Schema({
     tourType: { type: String, enum: ['custom', 'guided'], required: true },
-    tourTitle: { type: String, required: true, unique: true },
+    tourTitle: { type: String, required: true },
+    normalizedTourTitle: { type: String, required: true }, // Add normalized field
     tourDescription: { type: String, required: true },
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
@@ -90,7 +88,7 @@ const TourSchema = new mongoose.Schema({
     itinerary: { type: itinerarySchema },
     requirements: { type: requirementsSchema },
     pricing: { type: pricingSchema },
-    gallery: { type: gallerySchema },
+    gallery: { type: [gallerySchema] },
     agreedToTerms: { type: Boolean, default: false },
     operatorId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -108,8 +106,58 @@ const TourSchema = new mongoose.Schema({
         // get the creator from creatorSchema
         ref: "Operator",
     },
+    state: {
+        type: String,
+        default: "draft",
+        enum: ["draft", "published"],
+    },
+    slug: { type: String, unique: true } // Add the slug field
+
 });
 
+// TourSchema.pre('save', function (next) {
+//     const tour = this;
+//     if (tour.isModified('tourTitle') || tour.isModified('companyName')) {
+//         tour.slug = slugify(`${tour.companyName} ${tour.tourTitle}`, { lower: true, strict: true });
+//     }
+//     next();
+// });
+
+// Pre-save hook to handle slug and ensure uniqueness
+TourSchema.pre('save', async function (next) {
+    const tour = this;
+
+    if (tour.isModified('tourTitle') || tour.isModified('companyName')) {
+        // Convert tourTitle and companyName to lowercase for slug
+        const normalizedTitle = tour.tourTitle.toLowerCase().trim();
+        const normalizedCompanyName = tour.companyName.toLowerCase().trim();
+        tour.normalizedTourTitle = normalizedTitle; // Update normalizedTourTitle
+        tour.slug = slugify(`${normalizedCompanyName} ${normalizedTitle}`, { lower: true, strict: true });
+    }
+    console.log(tour.slug);
+    // Ensure unique tourTitle per operatorId
+    if (tour.isNew || tour.isModified('tourTitle')) {
+        const existingTour = await Tour.findOne({
+            normalizedTourTitle: tour.normalizedTourTitle,
+            operatorId: tour.operatorId
+        });
+
+        if (existingTour && existingTour._id.toString() !== tour._id.toString()) {
+            return next(new AppError(`You already have a tour with this title ${tour.tourTitle}`, 400));
+        }
+    }
+
+    next();
+});
+
+
+
+TourSchema.index({ tourTitle: 1, operatorId: 1 }, { unique: true });
+
+
+const Tour = mongoose.model("Tour", TourSchema);
+
+module.exports = Tour;
 
 
 
@@ -272,9 +320,3 @@ const TourSchema = new mongoose.Schema({
 //     },
 //     { timestamps: true }
 // );
-
-
-
-const Tour = mongoose.model("Tour", TourSchema);
-
-module.exports = Tour;

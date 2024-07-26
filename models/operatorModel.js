@@ -37,7 +37,7 @@ const OperatorSchema = new mongoose.Schema({
     default: null,
   },
   password: {
-    type: String,
+    type: String, 
     minlength: 8,
     select: false,
     // required: function () {
@@ -69,7 +69,7 @@ const OperatorSchema = new mongoose.Schema({
   },
   gender: {
     type: String,
-    enum: ["Male", "Female"],
+    enum: ["male", "female"],
   },
   status: {
     type: String,
@@ -83,6 +83,8 @@ const OperatorSchema = new mongoose.Schema({
     trim: true,
     default: null
   },
+  displayName: { type: String }, // Store the original company name for display purposes
+
   address: String,
   agreed_to_terms: {
     type: Boolean,
@@ -127,15 +129,39 @@ OperatorSchema.pre("save", async function (next) {
   next();
 });
 
-OperatorSchema.pre("save", async function (next) {
-  if (this.companyName !== null) {
-    const existingUser = await Operator.findOne({ companyName: this.companyName });
+// OperatorSchema.pre("save", async function (next) {
+//   if (this.companyName !== null) {
+//     const existingUser = await Operator.findOne({ companyName: this.companyName });
+//     if (existingUser && existingUser._id.toString() !== this._id.toString()) {
+//       return next(new AppError("Display name has been registered", 409));
+//     }
+//   }
+//   next();
+// });
+
+// Ensure company name is unique and set display name
+OperatorSchema.pre('save', async function (next) {
+  if (this.companyName) {
+    this.companyName = this.companyName.toLowerCase().trim();
+
+    // Perform a case-insensitive search for existing companyName
+    const existingUser = await Operator.findOne({ 
+      companyName: { $regex: new RegExp(`^${this.companyName}$`, 'i') } 
+    });
+
+    // Check if existing user is not the same as the current document being saved
     if (existingUser && existingUser._id.toString() !== this._id.toString()) {
-      return next(new AppError("Display name has been registered", 409));
+      return next(new AppError("Company name has been registered", 409));
     }
+
+    // Set displayName to the original companyName (case-sensitive)
+    this.displayName = this.companyName;
   }
+
   next();
 });
+
+
 
 OperatorSchema.methods.createEmailVerificationToken = function () {
   const verificationToken = crypto.randomBytes(3).toString('hex'); // 6-digit OTP

@@ -172,8 +172,32 @@ const updateOperatorProfile = async (req, res, next) => {
     } 
 
     // 2) Filtered out unwanted fields names that are not allowed to be updated
-    const filteredBody = filterObj(operatorUpdate, "firstName", "lastName", "email", "phoneNumber", "address" )
+    const filteredBody = filterObj(operatorUpdate, "firstName", "lastName", "email", "phoneNumber", "address", "companyName", "gender" )
 
+    if (filteredBody.email && filteredBody.email.toLowerCase() !== oldOperator.email.toLowerCase()) {
+        const existingOperator = await Operator.findOne({ email: filteredBody.email.toLowerCase() });
+        if (existingOperator) {
+            return next(new AppError("Email has been registered", 409));
+        }
+    }
+
+    // Check if companyName is being updated
+    if (filteredBody.companyName && filteredBody.companyName !== oldOperator.companyName) {
+        const newCompanyName = filteredBody.companyName.toLowerCase().trim();
+  
+        // Perform a case-insensitive search for existing companyName
+        const existingOperator = await Operator.findOne({ 
+          companyName: { $regex: new RegExp(`^${newCompanyName}$`, 'i') } 
+        });
+  
+        if (existingOperator && existingOperator._id.toString() !== id.toString()) {
+          return next(new AppError("Company name has been registered", 409));
+        }
+  
+        // Update companyName and displayName
+        filteredBody.companyName = newCompanyName;
+        filteredBody.displayName = req.body.companyName; // Preserve the case-sensitive display name
+      }
        // Check if email is being updated
     if (filteredBody.email && filteredBody.email !== oldOperator.email) {
       // Generate email verification token
@@ -186,6 +210,8 @@ const updateOperatorProfile = async (req, res, next) => {
       await new sendEmail(oldOperator, verificationURL).sendEmailVerification();
     }
 
+        
+      
     // 3) Update user document
     const updatedOperator = await Operator.findByIdAndUpdate(id, filteredBody, {
       new: true,
@@ -270,6 +296,8 @@ const deleteOperator = async (req, res, next) => {
   }
 };
 
+
+
 module.exports = {
   getAllOperators,
   getOperator,
@@ -280,4 +308,5 @@ module.exports = {
   deleteOperator,
   uploadOperatorPicture,
   uploadOperatorProfilePicture,
+  
 };

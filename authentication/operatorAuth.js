@@ -90,8 +90,8 @@ passport.use(
       }
 
       const validate = await operator.isValidPassword(password);
-      console.log("Operator found:", operator);
-      console.log("Password validation result:", validate);
+      // console.log("Operator found:", operator);
+      // console.log("Password validation result:", validate);
 
       if (!validate) {
         return next(new AppError("Email or Password is incorrect", 404));

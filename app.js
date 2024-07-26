@@ -19,7 +19,8 @@ const userAuthRouter = require("./routes/userAuthRoutes");
 const operatorAuthRouter = require("./routes/operatorAuthRoutes");
 const userRouter = require('./routes/userRoutes');
 const operatorRouter = require("./routes/operatorRoutes");
-
+const operatorTourRouter = require("./routes/operatorTourRoutes")
+// const userTourRouter = require("./routes/userTourRoutes")
 
 
 
@@ -93,6 +94,7 @@ app.get("/", (req, res) => {
 // User ROUTES
 app.use("/api/v1/users/", userAuthRouter);
 app.use("/api/v1/users/profile", userRouter);
+// app.use("/api/v1/users/tours", userTourRouter);
 
 
 
@@ -100,6 +102,8 @@ app.use("/api/v1/users/profile", userRouter);
 // Operator ROUTES
 app.use("/api/v1/operators/", operatorAuthRouter);
 app.use("/api/v1/operators/profile", operatorRouter);
+app.use("/api/v1/operators/tours", operatorTourRouter);
+
 
 
 
