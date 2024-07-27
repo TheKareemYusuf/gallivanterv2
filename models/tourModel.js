@@ -3,6 +3,8 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
 const AppError = require("../utils/appError");
+const Booking = require('./bookingModel'); 
+
 
 
 const coverageSchema = new mongoose.Schema({
@@ -90,6 +92,7 @@ const TourSchema = new mongoose.Schema({
     pricing: { type: pricingSchema },
     gallery: { type: [gallerySchema] },
     agreedToTerms: { type: Boolean, default: false },
+    numberOfBookings: { type: Number, default: 0 },
     operatorId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
@@ -110,6 +113,12 @@ const TourSchema = new mongoose.Schema({
         type: String,
         default: "draft",
         enum: ["draft", "published"],
+    },
+    stage: {
+        type: String,
+        enum: ['upcoming', 'completed'],
+        required: true,
+        default: "upcoming"
     },
     slug: { type: String, unique: true } // Add the slug field
 
@@ -149,6 +158,26 @@ TourSchema.pre('save', async function (next) {
 
     next();
 });
+
+
+TourSchema.methods.updateNumberOfBookings = async function () {
+    const tour = this;
+
+    // Find all bookings for this tour and sum the number of participants
+    const bookings = await Booking.find({ tourId: tour._id });
+    const totalParticipants = bookings.reduce((sum, booking) => sum + booking.numberOfParticipants, 0);
+
+    // Update the numberOfBookings field in the tour model
+    tour.numberOfBookings = totalParticipants;
+
+    // Check if the total participants exceed maxTraveler
+    if (totalParticipants > tour.maxTraveler) {
+        throw new AppError("Booking not allowed: maximum number of travelers exceeded", 400);
+    }
+
+    // Save the updated tour document
+    await tour.save();
+};
 
 
 

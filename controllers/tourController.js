@@ -460,6 +460,67 @@ const getAllTours = async (req, res, next) => {
     }
   };
 
+
+
+// Add a tour to the user's wishlist
+const addToWishlist = async (req, res, next) => {
+    try {
+        const userId = req.user._id; // Get the authenticated user's ID
+        const tourIdOrSlug = req.params.tourIdOrSlug; // Get the tour ID from the request body
+
+        const isObjectId = mongoose.Types.ObjectId.isValid(tourIdOrSlug);
+
+        // Check if the tour exists
+        const tour = await Tour.findOne(isObjectId ? { _id: tourIdOrSlug } : { slug: tourIdOrSlug });
+        if (!tour) {
+            return next(new AppError("Tour not found", 404));
+        }
+
+        // Find the user and update their wishlist
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { $addToSet: { wishList: tour._id } }, // Use $addToSet to avoid duplicates
+            { new: true, runValidators: true }
+        );
+
+        if (!user) {
+            return next(new AppError("User not found", 404));
+        }
+
+        res.status(200).json({
+            status: "success",
+            message: "Tour added to wishlist successfully",
+            data: user.wishList, // Return the updated wishlist
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getUserWishlistTours = async (req, res, next) => {
+    try {
+        const userId = req.user._id; // Get the authenticated user's ID
+
+        // Find the user and populate their wishlist with tour details
+        const user = await User.findById(userId).populate('wishList');
+
+        if (!user) {
+            return next(new AppError("User not found", 404));
+        }
+
+        res.status(200).json({
+            status: "success",
+            message: "Wishlist tours fetched successfully",
+            data: user.wishList, // Return the user's wishlist with tour details
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+
+
 module.exports = {
     createTour,
     updateTour,
@@ -470,5 +531,7 @@ module.exports = {
     updateTourState,
     getTourWithSlug,
     getAllTours,
-    getOneTour
+    getOneTour,
+    addToWishlist,
+    getUserWishlistTours
 }

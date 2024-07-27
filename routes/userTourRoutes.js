@@ -1,6 +1,8 @@
 const express = require("express");
 const passport = require("passport");
 const tourController = require("./../controllers/tourController");
+const bookingController = require("./../controllers/bookingController");
+
 
 const router = express.Router();
 
@@ -22,31 +24,26 @@ router.route("/:tourIdOrSlug").get(tourController.getOneTour);
 //     tourController.getRegTourDetails
 //   );
 
-// router
-// .route("/wishlist")
-// .get(
-//   passport.authenticate("jwt", { session: false }),
-//   tourController.getAllWishlist
-// );
+router
+.route("/profile/wishlist")
+.get(
+  passport.authenticate("jwt", { session: false }),
+  tourController.getUserWishlistTours
+);
 
-// router
-// .route("/wishlist/:tourId")
-// .get(
-//   passport.authenticate("jwt", { session: false }),
-//   tourController.getWishlistTour
-// );
 
-// router
-//   .route("/:tourId/join")
-//   .post(
-//     passport.authenticate("jwt", { session: false }),
-//     tourController.joinATour
-//   );
+router
+  .route("/:tourIdOrSlug/book")
+  .post(
+    // passport.authenticate("jwt", { session: false }),
+    bookingController.createBooking
+  );
 
-// router
-// .route("/:tourId/wishlist")
-// .post(
-//   passport.authenticate("jwt", { session: false }),
-//   tourController.addToWishList
-// );
+router
+.route("/:tourIdOrSlug/wishlist")
+.post(
+  passport.authenticate("jwt", { session: false }),
+  tourController.addToWishlist 
+);
+
 module.exports = router;

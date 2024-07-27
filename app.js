@@ -13,6 +13,7 @@ const helmet = require("helmet");
 const AppError = require("./utils/appError");
 const globalErrorHandler = require("./controllers/errorController");
 // const logger = require('./utils/logger');
+require('./utils/autoUpdateBookingStatus'); // CronJob to auto update booking status
 
 
 const userAuthRouter = require("./routes/userAuthRoutes");
@@ -21,6 +22,11 @@ const userRouter = require('./routes/userRoutes');
 const operatorRouter = require("./routes/operatorRoutes");
 const operatorTourRouter = require("./routes/operatorTourRoutes")
 const userTourRouter = require("./routes/userTourRoutes")
+const userBookingRouter = require("./routes/userBookingRoutes")
+const operatorBookingRouter = require("./routes/operatorBookingRoutes")
+
+
+
 
 
 
@@ -95,6 +101,7 @@ app.get("/", (req, res) => {
 app.use("/api/v1/users/", userAuthRouter);
 app.use("/api/v1/users/profile", userRouter);
 app.use("/api/v1/users/tours", userTourRouter);
+app.use("/api/v1/users/bookings", userBookingRouter);
 
 
 
@@ -103,6 +110,8 @@ app.use("/api/v1/users/tours", userTourRouter);
 app.use("/api/v1/operators/", operatorAuthRouter);
 app.use("/api/v1/operators/profile", operatorRouter);
 app.use("/api/v1/operators/tours", operatorTourRouter);
+app.use("/api/v1/operators/bookings", operatorBookingRouter);
+
 
 
 
