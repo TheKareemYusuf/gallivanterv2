@@ -43,6 +43,8 @@ const createReview = async (req, res, next) => {
             isAnonymous,
         });
 
+        await Tour.findById(newReview.tourId).then(tour => tour.calculateAverageRatings());
+
         res.status(201).json({
             status: "success",
             message: "Review created successfully",
@@ -179,6 +181,9 @@ const updateReview = async (req, res, next) => {
             new: true,
             runValidators: true,
         });
+
+        await Tour.findById(updatedReview.tourId).then(tour => tour.calculateAverageRatings());
+
 
         if (!updatedReview) {
             return next(new AppError("Review not found", 404));

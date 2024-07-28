@@ -78,7 +78,11 @@ router
     tourController.addImages
   );
 
-  router
+router.route("/dashboard/get-average-ratings")
+  .get(
+      passport.authenticate("jwt", { session: false }),
+      tourController.getAverageTourRatings
+  )
 
 
 module.exports = router;

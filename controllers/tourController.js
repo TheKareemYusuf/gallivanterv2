@@ -481,6 +481,9 @@ const getAllTours = async (req, res, next) => {
     }
   };
 
+// Get average ratings for a tour
+
+
 
 
 // Add a tour to the user's wishlist
@@ -562,7 +565,33 @@ const deleteTour = async (req, res, next) => {
     }
   };
 
+  const getAverageTourRatings = async (req, res, next) => {
+    try {
+        const operatorId = req.user._id;
 
+        // Find all tours for the operator
+        const tours = await Tour.find({ operatorId, averageRatings: { $exists: true, $ne: 0 } });
+
+        if (tours.length === 0) {
+            return res.status(200).json({
+                status: "success",
+                averageRatings: 0,
+                message: "No tours found for this operator.",
+            });
+        }
+
+        // Calculate the average ratings
+        const totalRatings = tours.reduce((sum, tour) => sum + (tour.averageRatings || 0), 0);
+        const averageRatings = totalRatings / tours.length;
+
+        res.status(200).json({
+            status: "success",
+            averageRatings: averageRatings,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
 
 
 module.exports = {
@@ -578,5 +607,6 @@ module.exports = {
     getOneTour,
     addToWishlist,
     getUserWishlistTours,
-    deleteTour
+    deleteTour,
+    getAverageTourRatings
 }

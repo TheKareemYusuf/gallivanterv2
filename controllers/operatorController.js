@@ -308,5 +308,4 @@ module.exports = {
   deleteOperator,
   uploadOperatorPicture,
   uploadOperatorProfilePicture,
-  
 };

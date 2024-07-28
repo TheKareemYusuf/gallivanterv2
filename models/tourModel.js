@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const slugify = require('slugify');
 const AppError = require("../utils/appError");
 const Booking = require('./bookingModel'); 
+const Review = require('./reviewModel');
 
 
 
@@ -205,6 +206,23 @@ TourSchema.methods.updateNumberOfBookings = async function () {
     // Check if the total participants exceed maxTraveler
     if (totalParticipants > tour.maxTraveler) {
         throw new AppError("Booking not allowed: maximum number of travelers exceeded", 400);
+    }
+
+    // Save the updated tour document
+    await tour.save();
+};
+
+TourSchema.methods.calculateAverageRatings = async function () {
+    const tour = this;
+
+    // Find all reviews for this tour
+    const reviews = await Review.find({ tourId: tour._id });
+
+    if (reviews.length === 0) {
+        tour.averageRatings = 0; // No reviews, set average rating to 0
+    } else {
+        const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+        tour.averageRatings = totalRating / reviews.length; // Calculate average
     }
 
     // Save the updated tour document
