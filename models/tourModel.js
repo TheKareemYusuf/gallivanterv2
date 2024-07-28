@@ -93,6 +93,7 @@ const TourSchema = new mongoose.Schema({
     gallery: { type: [gallerySchema] },
     agreedToTerms: { type: Boolean, default: false },
     numberOfBookings: { type: Number, default: 0 },
+    averageRatings: { type: Number, default: 0 },
     operatorId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
@@ -133,17 +134,42 @@ const TourSchema = new mongoose.Schema({
 // });
 
 // Pre-save hook to handle slug and ensure uniqueness
+// TourSchema.pre('save', async function (next) {
+//     const tour = this;
+
+//     if (tour.isModified('tourTitle') || tour.isModified('companyName')) {
+//         // Convert tourTitle and companyName to lowercase for slug
+//         const normalizedTitle = tour.tourTitle.toLowerCase().trim();
+//         const normalizedCompanyName = tour.companyName.toLowerCase().trim();
+//         tour.normalizedTourTitle = normalizedTitle; // Update normalizedTourTitle
+//         tour.slug = slugify(`${normalizedCompanyName} ${normalizedTitle}`, { lower: true, strict: true });
+//     }
+//     console.log(tour.slug);
+//     // Ensure unique tourTitle per operatorId
+//     if (tour.isNew || tour.isModified('tourTitle')) {
+//         const existingTour = await Tour.findOne({
+//             normalizedTourTitle: tour.normalizedTourTitle,
+//             operatorId: tour.operatorId
+//         });
+
+//         if (existingTour && existingTour._id.toString() !== tour._id.toString()) {
+//             return next(new AppError(`You already have a tour with this title ${tour.tourTitle}`, 400));
+//         }
+//     }
+
+//     next();
+// });
+
 TourSchema.pre('save', async function (next) {
     const tour = this;
 
     if (tour.isModified('tourTitle') || tour.isModified('companyName')) {
-        // Convert tourTitle and companyName to lowercase for slug
         const normalizedTitle = tour.tourTitle.toLowerCase().trim();
         const normalizedCompanyName = tour.companyName.toLowerCase().trim();
         tour.normalizedTourTitle = normalizedTitle; // Update normalizedTourTitle
         tour.slug = slugify(`${normalizedCompanyName} ${normalizedTitle}`, { lower: true, strict: true });
     }
-    console.log(tour.slug);
+
     // Ensure unique tourTitle per operatorId
     if (tour.isNew || tour.isModified('tourTitle')) {
         const existingTour = await Tour.findOne({
@@ -153,6 +179,12 @@ TourSchema.pre('save', async function (next) {
 
         if (existingTour && existingTour._id.toString() !== tour._id.toString()) {
             return next(new AppError(`You already have a tour with this title ${tour.tourTitle}`, 400));
+        }
+
+        // Ensure slug uniqueness
+        const existingSlugTour = await Tour.findOne({ slug: tour.slug });
+        if (existingSlugTour && existingSlugTour._id.toString() !== tour._id.toString()) {
+            return next(new AppError(`A tour with the slug ${tour.slug} already exists`, 400));
         }
     }
 

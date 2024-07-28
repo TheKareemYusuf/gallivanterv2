@@ -24,6 +24,9 @@ const operatorTourRouter = require("./routes/operatorTourRoutes")
 const userTourRouter = require("./routes/userTourRoutes")
 const userBookingRouter = require("./routes/userBookingRoutes")
 const operatorBookingRouter = require("./routes/operatorBookingRoutes")
+const userReviewRouter = require("./routes/userReviewRoutes")
+const operatorReviewRouter = require("./routes/operatorReviewRoutes")
+
 
 
 
@@ -102,6 +105,7 @@ app.use("/api/v1/users/", userAuthRouter);
 app.use("/api/v1/users/profile", userRouter);
 app.use("/api/v1/users/tours", userTourRouter);
 app.use("/api/v1/users/bookings", userBookingRouter);
+app.use("/api/v1/users/reviews", userReviewRouter)
 
 
 
@@ -111,6 +115,8 @@ app.use("/api/v1/operators/", operatorAuthRouter);
 app.use("/api/v1/operators/profile", operatorRouter);
 app.use("/api/v1/operators/tours", operatorTourRouter);
 app.use("/api/v1/operators/bookings", operatorBookingRouter);
+app.use("/api/v1/operators/reviews", operatorReviewRouter)
+
 
 
 

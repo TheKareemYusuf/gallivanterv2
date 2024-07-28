@@ -64,7 +64,6 @@ const createBooking = async (req, res, next) => {
             userFullName: `${contactDetails.firstName} ${contactDetails.lastName}`,
 
         };
-        console.log(bookingData.userId);
 
 
         const newBooking = await Booking.create(bookingData);
@@ -77,51 +76,75 @@ const createBooking = async (req, res, next) => {
     }
 };
 
-// Get all bookings
-const getAllBookings = async (req, res, next) => {
-    try {
-        let bookings;
+// // Get all bookings
+// const getAllBookings = async (req, res, next) => {
+//     try {
 
-        if (req.user) {
-            if (req.user.role === 'admin') {
-                // Admin can see all bookings
-                const features = new APIFeatures(
-                    Booking.find(),
-                    req.query
-                )
-                    .filter()
-                    .sort()
-                    .limitFields()
-                    .paginate();
-                bookings = await features.query;
-            } else if (req.user.role === 'user') {
-                // User can see their own bookings
-                const features = new APIFeatures(
-                    Booking.find().where("userId").equals(req.user._id),
-                    req.query
-                )
-                    .filter()
-                    .sort()
-                    .limitFields()
-                    .paginate();
-                bookings = await features.query;
-            } else if (req.user.role === 'operator') {
-                // Operator can see bookings related to their tours
-                const features = new APIFeatures(
-                    Booking.find().where("operatorId").equals(req.user._id),
-                    req.query
-                )
-                    .filter()
-                    .sort()
-                    .limitFields()
-                    .paginate();
-                bookings = await features.query;
-            } else {
-                return next(new AppError("Unauthorized role", 403));
-            }
-        } else {
-            return next(new AppError("User not authenticated", 401));
-        }
+//         if (req.user) {
+//             if (req.user.role === 'admin') {
+//                 // Admin can see all bookings
+//                 const features = new APIFeatures(
+//                     Booking.find(),
+//                     req.query
+//                 )
+//                     .filter()
+//                     .sort()
+//                     .limitFields()
+//                     .paginate();
+//                 bookings = await features.query;
+//             } else if (req.user.role === 'user') {
+//                 // User can see their own bookings
+//                 const features = new APIFeatures(
+//                     Booking.find().where("userId").equals(req.user._id),
+//                     req.query
+//                 )
+//                     .filter()
+//                     .sort()
+//                     .limitFields()
+//                     .paginate();
+//                 bookings = await features.query;
+//             } else if (req.user.role === 'operator') {
+//                 // Operator can see bookings related to their tours
+//                 const features = new APIFeatures(
+//                     Booking.find().where("operatorId").equals(req.user._id),
+//                     req.query
+//                 )
+//                     .filter()
+//                     .sort()
+//                     .limitFields()
+//                     .paginate();
+//                 bookings = await features.query;
+//             } else {
+//                 return next(new AppError("Unauthorized role", 403));
+//             }
+//         } else {
+//             return next(new AppError("User not authenticated", 401));
+//         }
+
+//         res.status(200).json({
+//             status: "success",
+//             results: bookings.length,
+//             data: bookings,
+//         });
+//     } catch (error) {
+//         next(error);
+//     }
+// };
+
+// Get all bookings for a user
+const getAllUserBookings = async (req, res, next) => {
+    try {
+        const userId = req.user._id;
+
+        const features = new APIFeatures(
+            Booking.find().where("userId").equals(userId),
+            req.query
+        )
+            .filter()
+            .sort()
+            .limitFields()
+            .paginate();
+        const bookings = await features.query;
 
         res.status(200).json({
             status: "success",
@@ -132,6 +155,45 @@ const getAllBookings = async (req, res, next) => {
         next(error);
     }
 };
+
+// Get all bookings for an operator
+const getAllOperatorBookings = async (req, res, next) => {
+    try {
+        const operatorId = req.user._id;
+
+        const features = new APIFeatures(
+            Booking.find().where("operatorId").equals(operatorId),
+            req.query
+        )
+            .filter()
+            .sort()
+            .limitFields()
+            .paginate();
+        const bookings = await features.query;
+
+        res.status(200).json({
+            status: "success",
+            results: bookings.length,
+            data: bookings,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getAllBookings = async (req, res, next) => {
+    try {
+        const bookings = await Booking.find();
+        res.status(200).json({
+            status: "success",
+            data: bookings,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+
 
 // Get a single booking by ID
 const getBookingById = async (req, res, next) => {
@@ -208,9 +270,12 @@ const cancelBooking = async (req, res, next) => {
 
 module.exports = {
     createBooking,
-    getAllBookings,
+    getAllUserBookings,
+    getAllOperatorBookings,
     getBookingById,
     updateBooking,
     deleteBooking,
     cancelBooking,
+    getAllUserBookings,
+    getAllBookings,
 };

@@ -55,11 +55,11 @@ router
     passport.authenticate("jwt", { session: false }),
     tourController.updateTourState
   )
-//   .delete(
-//     passport.authenticate("jwt", { session: false }),
-//     restrictToMW.restrictTo("admin"),
-//     tourController.deleteTour
-//   );
+  .delete(
+    passport.authenticate("jwt", { session: false }),
+    restrictToMW.restrictTo("admin"),
+    tourController.deleteTour
+  );
 
 // router
 //   .route("/:tourId/members")
@@ -77,6 +77,8 @@ router
     tourController.uploadMultiplePictures,
     tourController.addImages
   );
+
+  router
 
 
 module.exports = router;

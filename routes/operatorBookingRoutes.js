@@ -8,7 +8,7 @@ const router = express.Router();
 router.route("/")
 .get(
     passport.authenticate("jwt", { session: false }), 
-    bookingController.getAllBookings
+    bookingController.getAllOperatorBookings
 );
 
 router.route("/:id")

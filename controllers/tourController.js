@@ -4,6 +4,7 @@ const AppError = require("../utils/appError");
 const APIFeatures = require("../utils/apiFeatures");
 const Operator = require("../models/operatorModel");
 const mongoose = require('mongoose');
+const slugify = require('slugify');
 const uploadPicture = require("../utils/multerImageHandler");
 // const logger = require("../utils/logger")
 const sendEmail = require("../utils/email");
@@ -17,7 +18,7 @@ const {
     uploadToCloudinary,
     removeFromCloudinary,
 } = require("./../utils/cloudinary");
-const OperatorValidationMW = require("../validators/operator.validation");
+
 
 const uploadTourPicture = uploadPicture.single("tourCoverImage");
 const uploadMultiplePictures = uploadPicture.array("tourImages");
@@ -28,7 +29,7 @@ const createTour = async (req, res, next) => {
         const id = req.user._id;
         const user = await Operator.findById(id);
         if (!user) {
-            return next(new AppError("Creator not found", 404));
+            return next(new AppError("Operator not found", 404));
         }
 
         if (!user.companyName || user.companyName === null) {
@@ -52,8 +53,18 @@ const createTour = async (req, res, next) => {
         } = req.body;
 
 
-        // Normalize the tourTitle
         const normalizedTourTitle = tourTitle.toLowerCase();
+        const slug = slugify(`${user.companyName} ${normalizedTourTitle}`, { lower: true, strict: true });
+
+         // Check for existing tour with the same normalized title
+         const existingTour = await Tour.findOne({
+            normalizedTourTitle,
+            operatorId: req.user._id
+        });
+
+        if (existingTour) {
+            return next(new AppError(`You already have a tour with this title ${tourTitle}`, 400));
+        }
 
         // Save tour details to the database
         const newTour = await Tour.create({
@@ -71,7 +82,8 @@ const createTour = async (req, res, next) => {
             tourCoverage,
             operatorId: req.user._id,
             operatorName: req.user.firstName,
-            companyName: user.companyName
+            companyName: user.companyName,
+            slug
         });
 
         // Construct response object
@@ -88,47 +100,6 @@ const createTour = async (req, res, next) => {
         next(error);
     }
 };
-
-
-// const updateTour = async (req, res, next) => {
-//     try {
-//         let tourUpdate = { ...req.body };
-//         const id = req.params.tourId;
-//         const slug = req.params.slug;
-
-//         const operatorId = req.user._id;
-
-//         tourUpdate.state = "draft";
-
-//         const oldTour = await Tour.findById(id);
-
-//         if (!oldTour) {
-//             return next(new AppError("Tour not found", 404));
-//         }
-
-//         if (operatorId.toString() !== oldTour.operatorId._id.toString()) {
-//             return next(new AppError("You are not authorized", 403));
-//         }
-
-//         const tour = await Tour.findByIdAndUpdate(id, tourUpdate, {
-//             new: true,
-//             runValidators: true,
-//             context: "query",
-//         });
-
-//         if (!tour) {
-//             return next(new AppError("Tour not found", 404));
-//         }
-
-//         res.status(200).json({
-//             status: "success",
-//             message: "Tour updated successfully",
-//             data: tour,
-//         });
-//     } catch (error) {
-//         next(error);
-//     }
-// };
 
 
 const updateTour = async (req, res, next) => {
@@ -153,10 +124,18 @@ const updateTour = async (req, res, next) => {
             return next(new AppError("You are not authorized to update this tour", 403));
         }
 
-        // Normalize the tourTitle and update slug if necessary
-        if (tourUpdate.tourTitle) {
+          // Normalize the tourTitle and update slug if necessary
+          if (tourUpdate.tourTitle) {
             tourUpdate.normalizedTourTitle = tourUpdate.tourTitle.toLowerCase().trim();
-            // slug will be updated in pre-save hook
+            const newSlug = slugify(`${oldTour.companyName} ${tourUpdate.normalizedTourTitle}`, { lower: true, strict: true });
+
+            // Check for existing tour with the new slug
+            const existingTour = await Tour.findOne({ slug: newSlug });
+            if (existingTour && existingTour._id.toString() !== oldTour._id.toString()) {
+                return next(new AppError(`A tour with the slug ${newSlug} already exists`, 400));
+            }
+
+            tourUpdate.slug = newSlug; // Update slug
         }
 
         // Update the tour
@@ -236,6 +215,48 @@ const addImages = async (req, res, next) => {
         next(error);
     }
 };
+
+// const deleteImage = async (req, res, next) => {
+//     try {
+//       const { tourIdOrSlug, imagePublicId } = req.body;
+//       const operatorId = req.user._id;
+  
+//       // Find the tour by ID
+//       const tour = await Tour.findById(tourId);
+  
+//       if (!tour) {
+//         return next(new AppError("Tour not found", 404));
+//       }
+
+  
+//       // Find the index of the image to be deleted
+//       const imageIndex = tour.gallery.findIndex( 
+//         (image) => image.imagePublicId === imageId
+//       );
+  
+//       if (imageIndex === -1) {
+//         return res.status(404).json({ message: "Image not found" });
+//       }
+  
+//       // Get the public ID of the image
+//       const publicId = tour.gallery[imageIndex].imagePublicId;
+  
+//       // Delete the image from Cloudinary
+//       await removeFromCloudinary(publicId);
+  
+//       // Remove the image from the tour document
+//       tour.gallery.splice(imageIndex, 1);
+  
+//       // Save the updated tour document
+//       await tour.save();
+  
+//       return res
+//         .status(200)
+//         .json({ status: "success", message: "Image deleted successfully" });
+//     } catch (error) {
+//       next(error);
+//     }
+//   };
 
 const getTours = async (req, res, next) => {
     try {
@@ -518,6 +539,29 @@ const getUserWishlistTours = async (req, res, next) => {
     }
 };
 
+const deleteTour = async (req, res, next) => {
+    try {
+        const tourIdOrSlug = req.params.tourIdOrSlug; // Get the tour ID from the request body
+
+        const isObjectId = mongoose.Types.ObjectId.isValid(tourIdOrSlug);
+
+        // Check if the tour exists
+        const tour = await Tour.findOne(isObjectId ? { _id: tourIdOrSlug } : { slug: tourIdOrSlug });
+        if (!tour) {
+            return next(new AppError("Tour not found", 404));
+        }
+
+      await Tour.findByIdAndDelete(tour._id);
+  
+      res.status(200).json({
+        status: "Tour successfully deleted",
+        data: null,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
 
 
 
@@ -533,5 +577,6 @@ module.exports = {
     getAllTours,
     getOneTour,
     addToWishlist,
-    getUserWishlistTours
+    getUserWishlistTours,
+    deleteTour
 }

@@ -13,7 +13,7 @@ router.route("/")
     bookingController.createBooking
 ).get(
     passport.authenticate("jwt", { session: false }), 
-    bookingController.getAllBookings
+    bookingController.getAllUserBookings
 );
 
 router.route("/:id")

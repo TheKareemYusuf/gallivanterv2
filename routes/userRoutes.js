@@ -31,6 +31,7 @@ router
     userController.uploadUserProfilePicture
   );
 
+ 
 
 // router.patch('/updatePassword/', userAuthController.updatePassword);
 
