@@ -28,7 +28,10 @@ authRouter.post(
     // Remove password from output
     req.user.password = undefined;
 
- 
+    
+    const user = req.user
+    const url = CONFIG.EXPLORE_PAGE
+    await new sendEmail(user, url).sendUserWelcome();
 
     res.status(200).json({
       status: "success",

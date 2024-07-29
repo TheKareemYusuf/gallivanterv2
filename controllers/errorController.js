@@ -11,7 +11,11 @@ const handleDuplicateFieldsDB = (err) => {
   let message = `${getKeyIdentifier} already exists!`;
   if (getKeyIdentifier === "phoneNumber") {
     message = `Phone number already exists!`;
-  }
+  } else if (getKeyIdentifier === "email") {
+    message = `Email already exists!`;
+  } else if (getKeyIdentifier === "companyName") {
+    message = `Company name already exists!`;
+  } 
   return new AppError(message, 409);
 };
 

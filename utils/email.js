@@ -85,9 +85,14 @@ class sendEmail {
     await this.send('emailVerification', 'Your OTP for email verification');
   }
 
-  async sendWelcome() {
+  async sendUserWelcome() {
     
-    await this.send('welcome', 'Welcome to Gallivanter!');
+    await this.send('userWelcome', 'Welcome to Gallivanter!');
+  }
+
+  async sendOperatorWelcome() {
+    
+    await this.send('operatorWelcome', 'Welcome to Gallivanter!');
   }
 
   async sendPasswordReset() {
@@ -97,9 +102,9 @@ class sendEmail {
     );
   }
 
-  async sendTourRegConfirmation() {
+  async bookingConfirmation() {
     await this.send(
-      'joinATour',
+      'bookTour',
       'Tour Registration Confirmation'
     );
   }

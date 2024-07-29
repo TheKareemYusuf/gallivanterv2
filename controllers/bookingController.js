@@ -67,6 +67,10 @@ const createBooking = async (req, res, next) => {
 
 
         const newBooking = await Booking.create(bookingData);
+
+        
+
+        
         res.status(201).json({
             status: "success",
             data: newBooking,

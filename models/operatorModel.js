@@ -153,6 +153,7 @@ OperatorSchema.pre('save', async function (next) {
     if (existingUser && existingUser._id.toString() !== this._id.toString()) {
       return next(new AppError("Company name has been registered", 409));
     }
+  
 
     // Set displayName to the original companyName (case-sensitive)
     this.displayName = this.companyName;
@@ -160,6 +161,21 @@ OperatorSchema.pre('save', async function (next) {
 
   next();
 });
+
+OperatorSchema.methods.createPasswordResetToken = function() {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  // console.log({ resetToken }, this.passwordResetToken);
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+  return resetToken;
+};
 
 
 

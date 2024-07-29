@@ -1,0 +1,18 @@
+extends baseEmail
+
+block content
+  p Hi #{firstName},
+  p Welcome to Gallivanter, we're glad to have you 🎉🙏
+  p We have made it possible for you to manage your tours and bookings from your dashboard!
+  table.btn.btn-primary(role='presentation', border='0', cellpadding='0', cellspacing='0')
+    tbody
+      tr
+        td(align='left')
+          table(role='presentation', border='0', cellpadding='0', cellspacing='0')
+            tbody
+              tr
+                td
+                  a(href=`${url}`, target='_blank') Create Your First Tour
+  p If you need any help with curating your next tour, please don't hesitate to contact us!
+  p Warm regards,
+  p - Gallivanter Team

@@ -70,6 +70,7 @@ passport.use(
       await new sendEmail(user, verificationToken).sendEmailVerification();
 
 
+
       return next(null, user);
     } catch (error) {
       next(error);

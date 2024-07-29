@@ -2,7 +2,7 @@ const express = require("express");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const CONFIG = require("../config/config.js");
-const authController = require("../controllers/userAuthController.js")
+const authController = require("../controllers/operatorAuthController.js")
 const sendEmail = require('../utils/email.js');
 
 
@@ -28,6 +28,9 @@ authRouter.post(
     // Remove password from output
     req.user.password = undefined;
 
+    const user = req.user
+    const url = CONFIG.DASHBOARD
+    await new sendEmail(user, url).sendOperatorWelcome();
  
 
     res.status(200).json({
