@@ -14,37 +14,46 @@ authRouter.post(
   userValidationMW,
   passport.authenticate("user-signup", { session: false }),
   async (req, res, next) => {
-   try {
-    const body = {
-      role: req.user.role,
-      _id: req.user._id,
-      email: req.user.email,
-      firstName: req.user.firstName,
-    };
-    const token = jwt.sign({ user: body }, CONFIG.SECRET_KEY, {
-      expiresIn: "12h",
-    });
+    try {
+      const body = {
+        role: req.user.role,
+        _id: req.user._id,
+        email: req.user.email,
+        firstName: req.user.firstName,
+      };
+      const token = jwt.sign({ user: body }, CONFIG.SECRET_KEY, {
+        expiresIn: CONFIG.JWT_EXPIRES_IN,
+      });
 
-    // Remove password from output
-    req.user.password = undefined;
+      // Set the JWT in an HTTP-only cookie
+      res.cookie("jwt", token, {
+        httpOnly: true,
+        secure: true, // Set to true in production
+        maxAge: 12 * 60 * 60 * 1000, // 12 hours
+      });
 
-    
-    const user = req.user
-    const url = CONFIG.EXPLORE_PAGE
-    await new sendEmail(user, url).sendUserWelcome();
 
-    res.status(200).json({
-      status: "success",
-      message: "Signup successful",
-      user: req.user,
-      token,
-    });
 
-    
+      // Remove password from output
+      req.user.password = undefined;
 
-   } catch (error) {
-    next(error)
-   } 
+
+      const user = req.user
+      const url = CONFIG.EXPLORE_PAGE
+      await new sendEmail(user, url).sendUserWelcome();
+
+      res.status(200).json({
+        status: "success",
+        message: "Signup successful",
+        user: req.user,
+        token,
+      });
+
+
+
+    } catch (error) {
+      next(error)
+    }
   }
 );
 
@@ -65,6 +74,7 @@ authRouter.post("/login", async (req, res, next) => {
       }
 
       req.login(user, { session: false }, async (error) => {
+        console.log(user);
         if (error) return next(error);
 
         const body = {
@@ -74,7 +84,14 @@ authRouter.post("/login", async (req, res, next) => {
           firstName: user.firstName,
         };
         const token = jwt.sign({ user: body }, CONFIG.SECRET_KEY, {
-          expiresIn: "12h",
+          expiresIn: CONFIG.JWT_EXPIRES_IN,
+        });
+
+        // Set the JWT in an HTTP-only cookie
+        res.cookie("jwt", token, {
+          httpOnly: true,
+          secure: true, // Set to true in production
+          maxAge: 12 * 60 * 60 * 1000, // 12 hours
         });
 
         return res.status(200).json({

@@ -5,13 +5,14 @@ const operatorAuthController = require("./../controllers/operatorAuthController"
 
 const OperatorValidationMW = require("./../validators/operator.validation");
 const restrictToMW = require("./../authentication/restrictionHandler");
+const verifyJWT = require("./../utils/verifyJWT.js")
 
 const router = express.Router();
 
 router
   .route("/get-profile")
   .get(
-    passport.authenticate("jwt", { session: false }),
+    verifyJWT,
     operatorController.getOperatorProfile
   );
 

@@ -7,6 +7,7 @@ const bodyParser = require("body-parser");
 const session = require('express-session');
 const rateLimitMiddleware = require('./utils/rateLimiter');
 const helmet = require("helmet");
+const cookieParser = require('cookie-parser');
 
 
 
@@ -26,6 +27,7 @@ const userBookingRouter = require("./routes/userBookingRoutes")
 const operatorBookingRouter = require("./routes/operatorBookingRoutes")
 const userReviewRouter = require("./routes/userReviewRoutes")
 const operatorReviewRouter = require("./routes/operatorReviewRoutes")
+const userPaymentRouter = require("./routes/userPaymentRoutes")
 
 
 
@@ -78,6 +80,8 @@ app.use(
 // Middleware to parse user information
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(cookieParser());
+
 
 
 // User authentication middleware
@@ -106,6 +110,8 @@ app.use("/api/v1/users/profile", userRouter);
 app.use("/api/v1/users/tours", userTourRouter);
 app.use("/api/v1/users/bookings", userBookingRouter);
 app.use("/api/v1/users/reviews", userReviewRouter)
+app.use("/api/v1/users/payments", userPaymentRouter)
+
 
 
 

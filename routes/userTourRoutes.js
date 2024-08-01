@@ -2,6 +2,7 @@ const express = require("express");
 const passport = require("passport");
 const tourController = require("./../controllers/tourController");
 const bookingController = require("./../controllers/bookingController");
+const verifyJWT = require("./../utils/verifyJWT");
 
 
 const router = express.Router();
@@ -27,7 +28,8 @@ router.route("/:tourIdOrSlug").get(tourController.getOneTour);
 router
 .route("/profile/wishlist")
 .get(
-  passport.authenticate("jwt", { session: false }),
+  // passport.authenticate("jwt", { session: false }),
+  verifyJWT,
   tourController.getUserWishlistTours
 );
 
@@ -42,7 +44,8 @@ router
 router
 .route("/:tourIdOrSlug/wishlist")
 .post(
-  passport.authenticate("jwt", { session: false }),
+  // passport.authenticate("jwt", { session: false }),
+  verifyJWT,
   tourController.addToWishlist 
 );
 

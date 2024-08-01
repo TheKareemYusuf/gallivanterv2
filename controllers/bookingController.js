@@ -5,6 +5,7 @@ const Tour = require("../models/tourModel");
 const User = require("../models/userModel");
 const generateBookingCode = require("../utils/bookingCodeGenerator");
 const APIFeatures = require("../utils/apiFeatures");
+const sendEmail = require("../utils/email");
 
 
 // Create a new booking
@@ -68,6 +69,21 @@ const createBooking = async (req, res, next) => {
 
         const newBooking = await Booking.create(bookingData);
 
+        // // build user 
+        // const user = {
+        //     firstName: contactDetails.firstName,
+        //     lastName: contactDetails.lastName,
+        //     email: contactDetails.email,
+        //     phoneNumber: contactDetails.phoneNumber,
+        // }
+        // // get paymentUrl 
+        // // get tour 
+        // const regTour = {
+        //     tourTitle: tour.tourTitle,
+        //     tourPrice: tour.pricing.price,
+        // }
+
+        // await new sendEmail(user, tour).bookingConfirmation();
         
 
         

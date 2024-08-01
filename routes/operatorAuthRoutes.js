@@ -6,6 +6,7 @@ const authController = require("../controllers/operatorAuthController.js")
 const sendEmail = require('../utils/email.js');
 
 
+
 const authRouter = express.Router();
 const operatorValidationMW = require("../validators/operator.validation.js");
 
@@ -22,7 +23,14 @@ authRouter.post(
       firstName: req.user.firstName,
     };
     const token = jwt.sign({ user: body }, CONFIG.SECRET_KEY, {
-      expiresIn: "12h",
+      expiresIn: CONFIG.JWT_EXPIRES_IN,
+    });
+
+     // Set the JWT in an HTTP-only cookie
+     res.cookie("jwt", token, {
+      httpOnly: true,
+      secure: true, // Set to true in production
+      maxAge: 12 * 60 * 60 * 1000, // 12 hours
     });
 
     // Remove password from output
@@ -65,6 +73,7 @@ authRouter.post("/login", async (req, res, next) => {
       }
 
       req.login(user, { session: false }, async (error) => {
+        
         if (error) return next(error);
 
         const body = {
@@ -76,6 +85,13 @@ authRouter.post("/login", async (req, res, next) => {
         const token = jwt.sign({ user: body }, CONFIG.SECRET_KEY, {
           expiresIn: "12h",
         });
+
+         // Set the JWT in an HTTP-only cookie
+       res.cookie("jwt", token, {
+        httpOnly: true,
+        secure: true, // Set to true in production
+        maxAge: 12 * 60 * 60 * 1000, // 12 hours
+      });
 
         return res.status(200).json({
           status: "success",

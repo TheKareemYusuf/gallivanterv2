@@ -108,6 +108,14 @@ class sendEmail {
       'Tour Registration Confirmation'
     );
   }
+
+  // Yet to be implemented 
+  async operatorBookingConfirmation() {
+    await this.send(
+      'operatorBookTour',
+      'New Booking Alert'
+    );
+  }
 };
 
 
