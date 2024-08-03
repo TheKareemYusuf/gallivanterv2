@@ -106,11 +106,22 @@ const BookingSchema = new mongoose.Schema({
         unique: true,
         required: true,
     },
+    paymentReference: {
+        type: String,
+        required: true,
+        unique: true,
+    },
     contactDetails: contactDetailsSchema,
     activityDetails: [activityDetailsSchema],
 }, { timestamps: true });
 
-
+// Pre-save hook to check for paymentReference
+BookingSchema.pre('save', function (next) {
+    if (this.paymentReference) {
+        this.hasPaid = true; // Set hasPaid to true if paymentReference exists
+    }
+    next();
+});
 
 const Booking = mongoose.model('Booking', BookingSchema);
 

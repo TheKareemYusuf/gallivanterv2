@@ -221,6 +221,7 @@ const updateOperatorProfile = async (req, res, next) => {
 
     res.status(200).json({
       status: "success",
+      message: "Profile updated successfully",
       data: updatedOperator,
     
     });
@@ -269,6 +270,7 @@ const updateOperatorStatus = async (req, res, next) => {
 
     res.status(200).json({
       status: "success",
+      message: "Status updated successfully",
       data: operator,
     });
   } catch (error) {
@@ -288,7 +290,8 @@ const deleteOperator = async (req, res, next) => {
     await Operator.findByIdAndRemove(id);
 
     res.status(200).json({
-      status: "user successfully deleted",
+      status: "success",
+      message: "User successfully deleted",
       data: null,
     });
   } catch (error) {

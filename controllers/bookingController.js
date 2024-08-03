@@ -6,11 +6,14 @@ const User = require("../models/userModel");
 const generateBookingCode = require("../utils/bookingCodeGenerator");
 const APIFeatures = require("../utils/apiFeatures");
 const sendEmail = require("../utils/email");
+const paymentController = require('./paymentController'); // Import payment controller
+
 
 
 // Create a new booking
 const createBooking = async (req, res, next) => {
     try {
+
 
         const { tourIdOrSlug } = req.params;
         const tour = await Tour.findOne({ $or: [{ _id: tourIdOrSlug }, { slug: tourIdOrSlug }] });
@@ -27,7 +30,12 @@ const createBooking = async (req, res, next) => {
             numberOfParticipants,
             contactDetails,
             activityDetails,
+            paymentReference
         } = req.body;
+
+        if (!paymentReference) {
+            return next(new AppError('Payment reference is required', 400));
+        }
 
         // Generate a booking code
         const bookingCode = generateBookingCode();
@@ -89,6 +97,7 @@ const createBooking = async (req, res, next) => {
         
         res.status(201).json({
             status: "success",
+            message: "Booking created successfully",
             data: newBooking,
         });
     } catch (error) {
@@ -243,6 +252,7 @@ const updateBooking = async (req, res, next) => {
         }
         res.status(200).json({
             status: "success",
+            message: "Booking updated successfully",
             data: updatedBooking,
         });
     } catch (error) {
@@ -259,6 +269,7 @@ const deleteBooking = async (req, res, next) => {
         }
         res.status(204).json({
             status: "success",
+            message: "Booking deleted successfully",
             data: null,
         });
     } catch (error) {
@@ -281,6 +292,7 @@ const cancelBooking = async (req, res, next) => {
         }
         res.status(200).json({
             status: "success",
+            message: "Booking cancelled successfully",
             data: updatedBooking,
         });
     } catch (error) {

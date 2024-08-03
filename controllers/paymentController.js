@@ -3,23 +3,31 @@ const Booking = require('../models/bookingModel');
 const AppError = require('../utils/appError');
 const CONFIG = require('../config/config');
 
+
 const verifyPayment = async (req, res, next) => {
     try {
 
-        const { reference } = req.body;
+        const  {reference, price}  = req.body;
 
         const response = await axios.get(`https://api.paystack.co/transaction/verify/${reference}`, {
             headers: {
                 Authorization: `Bearer ${CONFIG.PAYSTACK_SECRET_KEY}`,
+                'Accept': 'application/json'
             },
         });
 
-        const { status, data } = response;
+        // console.log(response);
 
-        if (status === 200 && data.status === 'success') {
-            res.json({ message: 'Payment verified successfully' });
+        const status = response.status;
+        const data = response.data.data;
+       const amount = response.data.data.amount / 100;
+    //    console.log(amount);
+
+
+        if (status === 200 && data.status === 'success' && price === amount) {
+            res.json({ status: 'success', message: 'Payment verified successfully' });
         } else {
-            res.status(400).json({ message: 'Payment verification failed' });
+            res.status(400).json({ status: 'fail', message: 'Payment verification failed' });
         }
 
     } catch (error) {

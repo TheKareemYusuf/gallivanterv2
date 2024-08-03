@@ -425,7 +425,8 @@ const updateTourState = async (req, res, next) => {
         }
 
         res.status(200).json({
-            status: "Tour Published Successfully",
+            status: "success",
+            message: "Tour Published Successfully",
             data: tour,
         });
     } catch (error) {
@@ -557,7 +558,8 @@ const deleteTour = async (req, res, next) => {
       await Tour.findByIdAndDelete(tour._id);
   
       res.status(200).json({
-        status: "Tour successfully deleted",
+        status: "success",
+        message: "Tour successfully deleted",
         data: null,
       });
     } catch (error) {

@@ -9,7 +9,7 @@ const router = express.Router();
 router.route("/verify-payment")
 .post(
     // passport.authenticate("jwt", { session: false }), 
-    verifyJWT,
+    // verifyJWT,
     paymentController.verifyPayment
 );
 

@@ -74,7 +74,6 @@ authRouter.post("/login", async (req, res, next) => {
       }
 
       req.login(user, { session: false }, async (error) => {
-        console.log(user);
         if (error) return next(error);
 
         const body = {
@@ -97,9 +96,12 @@ authRouter.post("/login", async (req, res, next) => {
         return res.status(200).json({
           status: "success",
           message: "Login successful",
-          role: user.role,
           firstName: user.firstName,
+          lastName: user.lastName,
           email: user.email,
+          phoneNumber: user.phoneNumber,
+          profileImageUrl: user.profileImageUrl,
+          role: user.role,
           token,
         });
       });
@@ -138,7 +140,10 @@ authRouter.get(
       status: "success",
       message: "Login successful",
       firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
+      phoneNumber: user.phoneNumber,
+      profileImageUrl: user.profileImageUrl,
       role: user.role,
       token,
     });
