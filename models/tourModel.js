@@ -193,7 +193,22 @@ TourSchema.pre('save', async function (next) {
 });
 
 
-TourSchema.methods.updateNumberOfBookings = async function () {
+TourSchema.methods.isBookingAllowed = async function () {
+    const tour = this;
+
+    // Find all bookings for this tour and sum the number of participants
+    const bookings = await Booking.find({ tourId: tour._id });
+    const totalParticipants = bookings.reduce((sum, booking) => sum + booking.numberOfParticipants, 0);
+
+    // Check if the total participants exceed maxTraveler
+    if (totalParticipants >= tour.maxTraveler) {
+        throw new AppError("Booking not allowed: maximum number of travelers exceeded", 400);
+    }
+
+    return true; // Booking is allowed
+};
+
+TourSchema.methods.incrementNumberOfBookings = async function () {
     const tour = this;
 
     // Find all bookings for this tour and sum the number of participants
@@ -202,11 +217,6 @@ TourSchema.methods.updateNumberOfBookings = async function () {
 
     // Update the numberOfBookings field in the tour model
     tour.numberOfBookings = totalParticipants;
-
-    // Check if the total participants exceed maxTraveler
-    if (totalParticipants > tour.maxTraveler) {
-        throw new AppError("Booking not allowed: maximum number of travelers exceeded", 400);
-    }
 
     // Save the updated tour document
     await tour.save();
@@ -239,163 +249,3 @@ const Tour = mongoose.model("Tour", TourSchema);
 module.exports = Tour;
 
 
-
-// const ItinerarySchema = new mongoose.Schema({
-//     day: {
-//         type: Number,
-//         required: true
-//     },
-//     title: {
-//         type: String,
-//         required: true
-//     },
-//     description: {
-//         type: String,
-//         required: true
-//     },
-//     image: {
-//         type: String,
-//         required: true
-//     }
-// });
-
-// const ImageSchema = new mongoose.Schema({
-//     url: String,
-//     publicId: String
-// });
-
-// const TourSchema = new mongoose.Schema(
-//     {
-//         title: {
-//             type: String,
-//             required: [true, "Title is compulsory"],
-//             unique: [true, "There's a tour with this name already"],
-//             trim: true,
-//         },
-//         description: {
-//             type: String,
-//             required: true,
-//         },
-//         tourType: {
-//             type: String,
-//             required: true,
-//             enum: ["custom-tour", "guided-tour"]
-//         },
-//         startDate: {
-//             type: Date,
-//             required: true,
-//         },
-//         endDate: {
-//             type: Date,
-//             required: true,
-//         },
-//         arrivalTime: {
-
-//         },
-//         departureTime: {
-
-//         },
-//         tourCategory: {
-//             type: String,
-//             required: true,
-//         },
-//         minTraveler: {
-//             type: Number,
-//             required: true,
-//             min: 1,
-//         },
-//         maxTraveler: {
-//             type: Number,
-//             required: true,
-//             min: 1,
-//         },
-//         tourCoverage: {
-//             type: String,
-//             enum: ["meals", "accommodation", "transportation", "pick-up", "insurance"]
-//         },
-//         searchKeywords: {
-//             type: [],
-
-//         },
-//         operatorId: {
-//             type: mongoose.Schema.Types.ObjectId,
-//             required: true,
-//             // get the creator from creatorSchema
-//             ref: "Creator",
-//         },
-//         operatorName: {
-//             type: String,
-//             // get the creator from creatorSchema
-//             ref: "Creator",
-//         },
-//         companyName: {
-//             type: String,
-//             // get the creator from creatorSchema
-//             ref: "Creator",
-//         },
-//         location: {
-//             type: String,
-//             required: true,
-//         },
-//         numOfDays: {
-//             type: Number,
-//             required: true,
-//         },
-//         price: {
-//             type: Number,
-//             required: true,
-//         },
-//         currency: {
-//             type: String,
-//             required: true,
-//         },
-//         maxCapacity: {
-//             type: Number,
-//             required: true,
-//         },
-//         regMembers: {
-//             type: [
-//                 {
-//                     type: mongoose.Schema.Types.ObjectId,
-//                 },
-//             ],
-//             default: [],
-//             validate: {
-//                 validator: function (arr) {
-//                     return arr.length <= this.maxCapacity; // accessing maxCapacity from the schema
-//                 },
-//                 message: "Number of registered members cannot exceed the maximum capacity"
-//             },
-
-//         },
-//         wishList: {
-//             type: [
-//                 {
-//                     type: mongoose.Schema.Types.ObjectId,
-//                 },
-//             ],
-//             default: [],
-
-//         },
-//         numOfWishList: {
-//             type: Number,
-//             default: 0,
-//         },
-//         numOfRegMembers: {
-//             type: Number,
-//             default: 0,
-//         },
-//         tags: [String],
-//         itinerary: [ItinerarySchema],
-//         tourCoverImageUrl: String,
-//         tourCoverImagePublicId: String,
-//         tourImagesData: [ImageSchema],
-//         state: {
-//             type: String,
-//             default: "draft",
-//             enum: ["draft", "published"],
-//         },
-
-//     },
-//     { timestamps: true }
-// );

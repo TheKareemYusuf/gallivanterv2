@@ -1,12 +1,14 @@
 const mongoose = require('mongoose');
 const Booking = require("../models/bookingModel");
+const Payment = require("../models/paymentModel");
 const AppError = require("../utils/appError");
 const Tour = require("../models/tourModel");
 const User = require("../models/userModel");
 const generateBookingCode = require("../utils/bookingCodeGenerator");
 const APIFeatures = require("../utils/apiFeatures");
 const sendEmail = require("../utils/email");
-const paymentController = require('./paymentController'); // Import payment controller
+const axios = require('axios'); 
+const CONFIG = require('../config/config');
 
 
 
@@ -22,86 +24,137 @@ const createBooking = async (req, res, next) => {
         }
 
         // Check if booking can be made
-        await tour.updateNumberOfBookings(); // Update number of bookings before creating a new one
+        await tour.isBookingAllowed(); 
 
+        // console.log(tour);
 
         const {
             userId,
             numberOfParticipants,
             contactDetails,
             activityDetails,
-            paymentReference
+            paymentReference,
+
         } = req.body;
 
         if (!paymentReference) {
             return next(new AppError('Payment reference is required', 400));
         }
 
-        // Generate a booking code
-        const bookingCode = generateBookingCode();
 
-
-
-
-        // Prepare booking data
-        const bookingData = {
-            status: 'upcoming',
-            userId,
-            numberOfParticipants,
-            bookingCode,
-            tourCategory: tour.tourCategory,
-            tourTitle: tour.tourTitle,
-            operatorId: tour.operatorId,
-            companyName: tour.companyName,
-            tourType: tour.tourType,
-            startDate: tour.startDate,
-            endDate: tour.endDate,
-            tourId: tour._id,
-            price: tour.pricing.price,
-            contactDetails: {
-                firstName: contactDetails.firstName,
-                lastName: contactDetails.lastName,
-                email: contactDetails.email,
-                phoneNumber: contactDetails.phoneNumber,
+        const response = await axios.get(`https://api.paystack.co/transaction/verify/${paymentReference}`, {
+            headers: {
+                Authorization: `Bearer ${CONFIG.PAYSTACK_SECRET_KEY}`,
+                'Accept': 'application/json'
             },
-            activityDetails: activityDetails.map(activity => ({
-                firstName: activity.firstName,
-                lastName: activity.lastName,
-                dateOfBirth: activity.dateOfBirth,
-                specialRequirements: activity.specialRequirements,
-            })),
-            userFullName: `${contactDetails.firstName} ${contactDetails.lastName}`,
+        });
 
-        };
+        // check if webhook has been processed
+        const existingPayment = await Payment.findOne({ 'data.reference': paymentReference });
+
+        if (!existingPayment) {
+            return next(new AppError('Payment has already been processed', 400));
+        }
 
 
-        const newBooking = await Booking.create(bookingData);
+        const status = response.status;
+        const data = response.data.data;
+        const amount = response.data.data.amount / 100;
+        //    console.log(amount);
 
-        // // build user 
-        // const user = {
-        //     firstName: contactDetails.firstName,
-        //     lastName: contactDetails.lastName,
-        //     email: contactDetails.email,
-        //     phoneNumber: contactDetails.phoneNumber,
-        // }
-        // // get paymentUrl 
-        // // get tour 
-        // const regTour = {
-        //     tourTitle: tour.tourTitle,
-        //     tourPrice: tour.pricing.price,
-        // }
 
-        // await new sendEmail(user, tour).bookingConfirmation();
-        
 
-        
+        if (status === 200 && data.status === 'success' && tour.pricing.price === amount && existingPayment) {
+            // Generate a booking code
+            const bookingCode = generateBookingCode();
+
+            
+
+
+
+            // Prepare booking data
+            const bookingData = {
+                status: 'upcoming',
+                userId,
+                paymentReference,
+                numberOfParticipants,
+                bookingCode,
+                tourCategory: tour.tourCategory,
+                tourTitle: tour.tourTitle,
+                operatorId: tour.operatorId,
+                companyName: tour.companyName,
+                tourType: tour.tourType,
+                startDate: tour.startDate,
+                endDate: tour.endDate,
+                tourId: tour._id,
+                price: tour.pricing.price,
+                contactDetails: {
+                    firstName: contactDetails.firstName,
+                    lastName: contactDetails.lastName,
+                    email: contactDetails.email,
+                    phoneNumber: contactDetails.phoneNumber,
+                },
+                activityDetails: activityDetails.map(activity => ({
+                    firstName: activity.firstName,
+                    lastName: activity.lastName,
+                    dateOfBirth: activity.dateOfBirth,
+                    specialRequirements: activity.specialRequirements,
+                })),
+                userFullName: `${contactDetails.firstName} ${contactDetails.lastName}`,
+
+            };
+
+
+            const newBooking = await Booking.create(bookingData);
+
+            await tour.incrementNumberOfBookings();
+
+            
+
+
+
+
+            // // build user 
+            // const user = {
+            //     firstName: contactDetails.firstName,
+            //     lastName: contactDetails.lastName,
+            //     email: contactDetails.email,
+            //     phoneNumber: contactDetails.phoneNumber,
+            // }
+            // // get paymentUrl 
+            // // get tour 
+            // const regTour = {
+            //     tourTitle: tour.tourTitle,
+            //     tourPrice: tour.pricing.price,
+            // }
+
+            // await new sendEmail(user, tour).bookingConfirmation();
+
+            
         res.status(201).json({
             status: "success",
             message: "Booking created successfully",
             data: newBooking,
         });
+        } else {
+            return next(new AppError('Payment verification failed', 400));
+        }
+
+
+
+        
+      
     } catch (error) {
-        next(error);
+        if (error.response) {
+            // The request was made and the server responded with a status code
+            return next(new AppError(`Payment verification failed: ${error.response.data.message}`, error.response.status));
+        } else if (error.request) {
+            // The request was made but no response was received
+            return next(new AppError('Payment verification failed: No response from payment gateway', 500));
+        } else {
+            // Something happened in setting up the request that triggered an Error
+            return next(new AppError(`Payment verification failed: ${error.message}`, 500));
+        }
     }
 };
 

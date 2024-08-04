@@ -30,6 +30,7 @@ const bookingSchema = Joi.object({
     price: Joi.number().required(),
     hasPaid: Joi.boolean().default(false),
     bookingCode: Joi.string().required(),
+    paymentReference: Joi.string().required(),
     contactDetails: contactDetailsSchema.required(),
     activityDetails: Joi.array().items(activityDetailsSchema).optional(),
 });
