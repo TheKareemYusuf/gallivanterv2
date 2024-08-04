@@ -2,6 +2,8 @@ const axios = require('axios');
 const Booking = require('../models/bookingModel');
 const AppError = require('../utils/appError');
 const CONFIG = require('../config/config');
+const crypto = require('crypto');
+const Payment = require('../models/paymentModel');
 
 
 const verifyPayment = async (req, res, next) => {
