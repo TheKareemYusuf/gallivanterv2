@@ -1,66 +1,66 @@
 const mongoose = require('mongoose');
 
 const logSchema = new mongoose.Schema({
-    time_spent: { type: Number },
-    attempts: { type: Number },
-    authentication: { type: String },
-    errors: { type: Number },
-    success: { type: Boolean },
-    mobile: { type: Boolean },
-    input: { type: [String] },
-    channel: { type: String },
+    time_spent: { type: Number, default: null },
+    attempts: { type: Number, default: null },
+    authentication: { type: String, default: null },
+    errors: { type: Number, default: null },
+    success: { type: Boolean, default: null },
+    mobile: { type: Boolean, default: null },
+    input: { type: [String], default: null },
+    channel: { type: String, default: null },
     history: [{
-        type: { type: String },
-        message: { type: String },
-        time: { type: Number }
+        type: { type: String, default: null },
+        message: { type: String, default: null },
+        time: { type: Number, default: null }
     }]
 });
 
 const customerSchema = new mongoose.Schema({
     id: { type: Number, required: true },
-    first_name: { type: String, required: true },
-    last_name: { type: String, required: true },
-    email: { type: String, required: true },
-    customer_code: { type: String },
-    phone: { type: String },
-    metadata: { type: mongoose.Schema.Types.Mixed },
-    risk_action: { type: String }
+    first_name: { type: String, default: null },
+    last_name: { type: String, default: null },
+    email: { type: String, default: null },
+    customer_code: { type: String, default: null },
+    phone: { type: String, default: null },
+    metadata: { type: mongoose.Schema.Types.Mixed, default: null },
+    risk_action: { type: String, default: null }
 });
 
 const authorizationSchema = new mongoose.Schema({
-    authorization_code: { type: String, required: true },
-    bin: { type: String, required: true },
-    last4: { type: String, required: true },
-    exp_month: { type: String, required: true },
-    exp_year: { type: String, required: true },
-    card_type: { type: String, required: true },
-    bank: { type: String, required: true },
-    country_code: { type: String, required: true },
-    brand: { type: String, required: true },
-    account_name: { type: String, required: true }
+    authorization_code: { type: String, default: null },
+    bin: { type: String, default: null },
+    last4: { type: String, default: null },
+    exp_month: { type: String, default: null },
+    exp_year: { type: String, default: null },
+    card_type: { type: String, default: null },
+    bank: { type: String, default: null },
+    country_code: { type: String, default: null },
+    brand: { type: String, default: null },
+    account_name: { type: String, default: null }
 });
 
 const paymentSchema = new mongoose.Schema({
     event: { type: String, required: true },
     data: {
         id: { type: Number, required: true },
-        domain: { type: String, required: true },
-        status: { type: String, required: true },
-        reference: { type: String, required: true },
-        amount: { type: Number, required: true },
-        message: { type: String },
+        domain: { type: String, default: null },
+        status: { type: String, default: null },
+        reference: { type: String, default: null },
+        amount: { type: Number, default: null },
+        message: { type: String, default: null },
         gateway_response: { type: String, required: true },
-        paid_at: { type: Date, required: true },
-        created_at: { type: Date, required: true },
-        channel: { type: String, required: true },
-        currency: { type: String, required: true },
-        ip_address: { type: String, required: true },
-        metadata: { type: mongoose.Schema.Types.Mixed },
+        paid_at: { type: Date, default: null },
+        created_at: { type: Date, default: null },
+        channel: { type: String, default: null },
+        currency: { type: String, default: null },
+        ip_address: { type: String, default: null },
+        metadata: { type: mongoose.Schema.Types.Mixed, default: null },
         log: logSchema,
-        fees: { type: mongoose.Schema.Types.Mixed },
+        fees: { type: mongoose.Schema.Types.Mixed, default: null },
         customer: customerSchema,
         authorization: authorizationSchema,
-        plan: { type: mongoose.Schema.Types.Mixed }
+        plan: { type: mongoose.Schema.Types.Mixed, default: null }
     }
 }, { timestamps: true });
 
