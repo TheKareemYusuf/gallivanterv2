@@ -52,7 +52,33 @@ const paymentWebhook = async (req, res, next) => {
             const paymentData = event.data;
             console.log('Payment successful:', paymentData);
 
-            // You can save the payment data to your database here
+            // Save the payment data to the database
+            const newPayment = new Payment({
+                event: event.event,
+                data: {
+                    id: paymentData.id,
+                    domain: paymentData.domain,
+                    status: paymentData.status,
+                    reference: paymentData.reference,
+                    amount: paymentData.amount,
+                    message: paymentData.message,
+                    gateway_response: paymentData.gateway_response,
+                    paid_at: paymentData.paid_at,
+                    created_at: paymentData.created_at,
+                    channel: paymentData.channel,
+                    currency: paymentData.currency,
+                    ip_address: paymentData.ip_address,
+                    metadata: paymentData.metadata,
+                    log: paymentData.log,
+                    fees: paymentData.fees,
+                    customer: paymentData.customer,
+                    authorization: paymentData.authorization,
+                    plan: paymentData.plan
+                }
+            });
+
+            await newPayment.save(); // Save the payment data
+
 
             res.status(200).send('Webhook received');
         } else {
