@@ -20,7 +20,7 @@ const {
 } = require("./../utils/cloudinary");
 
 
-const uploadTourPicture = uploadPicture.single("tourCoverImage");
+const uploadTourPicture = uploadPicture.single("tourItineraryImage");
 const uploadMultiplePictures = uploadPicture.array("tourImages");
 
 
@@ -215,6 +215,33 @@ const addImages = async (req, res, next) => {
         next(error);
     }
 };
+
+const addItineraryImages = async (req, res, next) => {
+    try {
+        const { tourId } = req.params; 
+        const tour = await Tour.findById(tourId);
+
+
+        if (!tour) {
+            return next(new AppError("Tour not found", 404));
+        }
+
+
+        // Upload image to Cloudinary
+        const imageData = await uploadToCloudinary(req.file.buffer, "itinerary-images");
+
+    
+
+        res.status(200).json({
+            status: "success",
+            message: "Itinerary images uploaded successfully",
+            data: imageData,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 
 // const deleteImage = async (req, res, next) => {
 //     try {
@@ -600,7 +627,9 @@ module.exports = {
     createTour,
     updateTour,
     uploadMultiplePictures,
+    uploadTourPicture,
     addImages,
+    addItineraryImages,
     getOperatourTours,
     getAOperatorTour,
     updateTourState,

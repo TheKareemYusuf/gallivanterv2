@@ -86,6 +86,15 @@ router
     tourController.addImages
   );
 
+  router
+  .route("/:tourId/upload-itinerary-image")
+  .patch(
+    // passport.authenticate("jwt", { session: false }),
+    verifyJWT,
+    tourController.uploadTourPicture,
+    tourController.addItineraryImages
+  );
+
 router.route("/dashboard/get-average-ratings")
   .get(
       // passport.authenticate("jwt", { session: false }),
