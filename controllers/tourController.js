@@ -49,8 +49,10 @@ const createTour = async (req, res, next) => {
             tourCategory,
             minTraveler,
             maxTraveler,
-            tourCoverage
+            tourCoverage,
         } = req.body;
+
+        console.log(tourType);
 
 
         const normalizedTourTitle = tourTitle.toLowerCase();
@@ -92,7 +94,6 @@ const createTour = async (req, res, next) => {
             message: "Tour created successfully",
             data: newTour,
         };
-
         // Send response to frontend
         res.status(201).json(response);
     } catch (error) {

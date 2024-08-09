@@ -26,7 +26,11 @@ const createBooking = async (req, res, next) => {
         // Check if booking can be made
         await tour.isBookingAllowed(); 
 
-        // console.log(tour);
+        // const myId = req.user ? req.user._id : null;
+
+
+        
+        // console.log(myId);
 
         const {
             userId,
@@ -49,12 +53,12 @@ const createBooking = async (req, res, next) => {
             },
         });
 
-        // check if webhook has been processed
-        const existingPayment = await Payment.findOne({ 'data.reference': paymentReference });
+        // // check if webhook has been processed
+        // const existingPayment = await Payment.findOne({ 'data.reference': paymentReference });
 
-        if (!existingPayment) {
-            return next(new AppError('Payment has already been processed', 400));
-        }
+        // if (!existingPayment) {
+        //     return next(new AppError('Payment has already been processed', 400));
+        // }
 
 
         const status = response.status;
@@ -64,18 +68,16 @@ const createBooking = async (req, res, next) => {
 
 
 
-        if (status === 200 && data.status === 'success' && tour.pricing.price === amount && existingPayment) {
+        if (status === 200 && data.status === 'success' && tour.pricing.price === amount) {
             // Generate a booking code
             const bookingCode = generateBookingCode();
 
             
-
-
-
-            // Prepare booking data
+             // Prepare booking data
             const bookingData = {
                 status: 'upcoming',
                 userId,
+                userType: userId ? 'registered' : 'non-registered',
                 paymentReference,
                 numberOfParticipants,
                 bookingCode,
@@ -153,7 +155,7 @@ const createBooking = async (req, res, next) => {
             return next(new AppError('Payment verification failed: No response from payment gateway', 500));
         } else {
             // Something happened in setting up the request that triggered an Error
-            return next(new AppError(`Payment verification failed: ${error.message}`, 500));
+            return next(new AppError(`Booking failed: ${error.message}`, 500));
         }
     }
 };

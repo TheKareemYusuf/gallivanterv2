@@ -46,8 +46,13 @@ const BookingSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true,
+        // required: true,
         default: null
+    },
+    userType: {
+        type: String,
+        enum: ['registered', 'non-registered'],
+        required: true,
     },
     userFullName: {
         type: String,
@@ -117,11 +122,16 @@ const BookingSchema = new mongoose.Schema({
 
 // Pre-save hook to check for paymentReference
 BookingSchema.pre('save', function (next) {
-    if (this.paymentReference) {
-        this.hasPaid = true; // Set hasPaid to true if paymentReference exists
-    }
-    next();
+     // Set hasPaid to true if paymentReference exists
+     this.hasPaid = !!this.paymentReference;
+
+     // Determine userType based on userId presence
+     this.userType = this.userId ? 'registered' : 'non-registered';
+ 
+     next();
 });
+
+
 
 const Booking = mongoose.model('Booking', BookingSchema);
 

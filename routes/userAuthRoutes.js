@@ -133,7 +133,7 @@ authRouter.get(
       firstName: user.firstName,
     };
     const token = jwt.sign({ user: body }, CONFIG.SECRET_KEY, {
-      expiresIn: "12h",
+      expiresIn: CONFIG.JWT_EXPIRES_IN,
     });
 
     res.status(200).json({
